@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Word In Memory</string>
+
+    <!-- dashboard screen -->
+    <string name="dashboard_action_button">Add new word</string>
+    <string name="offers_title">Offers</string>
+    <string name="demands_title">Demands</string>
+    <string name="to_translate_field">Enter the sentence you want to read and understand.</string>
+    <string name="translation_field">Enter the translation.</string>
+    <string name="show_all">Show all</string>
+    <string name="non_completed_only">Show only not completed</string>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bgCompleteIcon"
+    android:shape="oval">
+    <!--    <stroke android:width="8dp" android:color="#ffffffff" />-->
+<!--    <padding android:left="2dp"-->
+<!--        android:top="2dp"-->
+<!--        android:right="2dp"-->
+<!--        android:bottom="2dp" />-->
+<!--    <corners android:radius="16dp" />-->
+    <solid android:color="#00000000" />
+    <stroke
+        android:width="2dp"
+        android:color="#0023FF"
+        android:dashWidth="0dp"
+        android:dashGap="0dp" />
+
+</shape>

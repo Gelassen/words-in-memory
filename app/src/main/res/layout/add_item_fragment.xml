@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:swap="http://schemas.android.com/apk/ru.home.swap">
+
+    <data>
+        <variable
+            name="provider"
+            type="io.github.gelassen.wordinmemory.providers.DashboardProvider" />
+        <variable
+            name="model"
+            type="io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/toTranslateEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_margin"
+            android:layout_marginTop="@dimen/base_margin"
+            android:layout_marginEnd="@dimen/base_margin"
+            android:nextFocusRight="@+id/translateEditText"
+            android:backgroundTint="@color/blue_light"
+            android:hint="@string/to_translate_field"
+            android:singleLine="true"
+            android:text="@={model.wordToTranslate}" />
+
+        <EditText
+            android:id="@+id/translateEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/toTranslateEditText"
+            android:layout_marginStart="@dimen/base_margin"
+            android:layout_marginTop="@dimen/base_margin"
+            android:layout_marginEnd="@dimen/base_margin"
+            android:backgroundTint="@color/blue_light"
+            android:hint="@string/translation_field"
+            android:singleLine="true"
+            android:text="@={model.translation}" />
+
+<!--        <io.github.gelassen.wordinmemory.GroupChoiceView
+            android:id="@+id/group_choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/editText"
+            android:layout_alignParentStart="true"
+            android:visibility="GONE"
+            />-->
+
+        <TextView
+            android:id="@+id/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/translateEditText"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="@dimen/base_margin"
+            android:layout_marginEnd="@dimen/base_margin"
+            android:layout_marginBottom="@dimen/base_margin"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:enabled="@{provider.isInputEmpty(model.wordToTranslate) ? false : true}"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="@dimen/selectable_view_padding"
+            android:text="Save"
+            android:textColor="@color/selector_two_state_view" />
+
+    </RelativeLayout>
+</layout>

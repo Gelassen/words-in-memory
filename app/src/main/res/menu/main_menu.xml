@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/showAll"
+        android:title="@string/show_all" />
+
+    <item android:id="@+id/showNonCompletedOnly"
+        android:title="@string/non_completed_only" />
+
+</menu>
