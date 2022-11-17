@@ -65,19 +65,6 @@ class DashboardViewModel
         }
     }
 
-    fun getAllSubjectsToStudy() {
-        viewModelScope.launch {
-            storageRepository
-                .getSubjects()
-                .flowOn(Dispatchers.IO)
-                .collect { it ->
-                    state.update { state ->
-                        state.copy(data = it, status = StateFlag.DATA)
-                    }
-            }
-        }
-    }
-
     fun updateItem(selectedSubject: SubjectToStudy, isComplete: Boolean) {
         viewModelScope.launch {
             selectedSubject.isCompleted = isComplete
@@ -87,7 +74,16 @@ class DashboardViewModel
     }
 
     fun showAll() {
-        getAllSubjectsToStudy()
+        viewModelScope.launch {
+            storageRepository
+                .getSubjects()
+                .flowOn(Dispatchers.IO)
+                .collect { it ->
+                    state.update { state ->
+                        state.copy(data = it, status = StateFlag.DATA)
+                    }
+                }
+        }
     }
 
     fun showNonCompletedOnly() {

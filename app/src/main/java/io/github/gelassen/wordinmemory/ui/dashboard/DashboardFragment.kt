@@ -1,14 +1,11 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
-import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.AppApplication
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.FragmentDashboardBinding
@@ -112,7 +109,7 @@ class DashboardFragment: Fragment(),
 
     private fun runOnStart() {
         lifecycleScope.launchWhenStarted {
-            viewModel.getAllSubjectsToStudy()
+            viewModel.showNonCompletedOnly()
         }
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { it ->
