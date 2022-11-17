@@ -6,14 +6,15 @@
     android:background="@drawable/bg_dashboard_item_level_list"
     android:clickable="true"
     android:padding="16dp"
+    android:layout_margin="2dp"
     xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
         android:id="@+id/toTranslate"
+        style="@style/Base.Widget.AppCompat.TextView.Custom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:textSize="24sp"
         tools:text="Word to memorize"
         />
 

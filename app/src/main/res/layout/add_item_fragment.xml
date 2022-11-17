@@ -24,9 +24,9 @@
             android:layout_marginStart="@dimen/base_margin"
             android:layout_marginTop="@dimen/base_margin"
             android:layout_marginEnd="@dimen/base_margin"
-            android:nextFocusRight="@+id/translateEditText"
             android:backgroundTint="@color/blue_light"
             android:hint="@string/to_translate_field"
+            android:nextFocusRight="@+id/translateEditText"
             android:singleLine="true"
             android:text="@={model.wordToTranslate}" />
 

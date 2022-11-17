@@ -4,4 +4,6 @@
 
     <solid android:color="#88000000" />
 
+    <corners android:radius="@dimen/dashboard_view_item_corner_radius" />
+
 </shape>

@@ -3,4 +3,8 @@
     <dimen name="base_margin">16dp</dimen>
 
     <dimen name="selectable_view_padding">12dp</dimen>
+
+    <!-- Dashboard -->
+    <dimen name="dashboard_view_item_corner_radius">2dp</dimen>
+    <dimen name="default_text_size">24sp</dimen>
 </resources>
