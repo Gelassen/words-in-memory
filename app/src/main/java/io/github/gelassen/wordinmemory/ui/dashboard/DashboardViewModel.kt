@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,6 +37,8 @@ class DashboardViewModel
     val wordToTranslate: ObservableField<String> = ObservableField<String>("")
 
     val translation: ObservableField<String> = ObservableField<String>("")
+
+    private var filterRequestJob: Job? = null
 
     fun addItem() {
         viewModelScope.launch {
@@ -74,9 +77,11 @@ class DashboardViewModel
     }
 
     fun showAll() {
-        viewModelScope.launch {
+        filterRequestJob?.cancel()
+        filterRequestJob = viewModelScope.launch {
             storageRepository
                 .getSubjects()
+                .cancellable()
                 .flowOn(Dispatchers.IO)
                 .collect { it ->
                     state.update { state ->
@@ -87,9 +92,11 @@ class DashboardViewModel
     }
 
     fun showNonCompletedOnly() {
-        viewModelScope.launch {
+        filterRequestJob?.cancel()
+        filterRequestJob = viewModelScope.launch {
             storageRepository
                 .getNonCompleteSubjectsOnly()
+                .cancellable()
                 .flowOn(Dispatchers.IO)
                 .collect { it ->
                     state.update { state ->
