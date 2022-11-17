@@ -1,7 +1,10 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -50,6 +53,11 @@ class DashboardFragment: Fragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        (requireActivity() as AppCompatActivity).setSupportActionBar(binding.toolbar)
+
+        val dr = ColorDrawable(getApiSupportColor())
+        (requireActivity() as AppCompatActivity).supportActionBar!!.setBackgroundDrawable(dr)
 
         binding.dashboardList.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.dashboardList.adapter = DashboardAdapter(this)
@@ -105,6 +113,14 @@ class DashboardFragment: Fragment(),
             AddItemBottomSheetDialogFragment.newInstance(selectedSubject)
                 .show(it, AddItemBottomSheetDialogFragment.TAG)
         }
+    }
+
+    @Suppress("DEPRECATION")
+    protected fun getApiSupportColor(): Int {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            resources.getColor(R.color.colorActionBar, requireActivity().theme)
+        else
+            resources.getColor(R.color.colorActionBar)
     }
 
     private fun runOnStart() {
