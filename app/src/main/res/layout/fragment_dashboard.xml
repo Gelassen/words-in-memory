@@ -21,6 +21,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
         android:contentDescription="@string/dashboard_action_button"
+        android:foreground="@drawable/ic_add_item"
+        android:foregroundTint="@color/white"
         app:backgroundTint="#0023FF" />
 
 </FrameLayout>
