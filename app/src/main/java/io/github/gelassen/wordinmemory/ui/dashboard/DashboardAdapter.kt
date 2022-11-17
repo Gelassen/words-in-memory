@@ -5,6 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.ViewItemDasboardItemBinding
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 
@@ -27,6 +28,17 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val selectedSubject = data.get(position)
         holder.binding.toTranslate.text = selectedSubject.toTranslate
+        prepareOnCompleteClickCase(holder, selectedSubject)
+        prepareToTranslateClickCase(holder, selectedSubject)
+        prepareResponseOnSelectionCase(holder, selectedSubject)
+        prepareLongPressCase(holder, selectedSubject)
+    }
+
+    override fun getItemCount(): Int {
+        return data.size
+    }
+
+    fun prepareOnCompleteClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
         holder.binding.completeIcon.setOnClickListener {
             if (selectedSubject.isCompleted) {
                 clickListener.onNonComplete(selectedSubject)
@@ -34,8 +46,11 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
                 clickListener.onComplete(selectedSubject)
             }
         }
+    }
+
+    fun prepareToTranslateClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
         holder.binding.root.setOnClickListener { it ->
-            clickListener.onClick(data.get(position))
+            clickListener.onClick(selectedSubject)
             holder.translationIsOn = !holder.translationIsOn
             if (holder.translationIsOn) {
                 holder.binding.toTranslate.text = selectedSubject.toTranslate + " / " + selectedSubject.translation
@@ -43,13 +58,31 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
                 holder.binding.toTranslate.text = selectedSubject.toTranslate
             }
         }
+    }
+
+    fun prepareResponseOnSelectionCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
+        val selectedFlag = 1
+        val notSelectedFlag = 0
         if (selectedSubject.isCompleted) {
-            holder.binding.root.background.level = 1
-            holder.binding.completeIcon.background.setLevel(1)
+            holder.binding.root.background.level = selectedFlag
+            holder.binding.completeIcon.background.setLevel(selectedFlag)
+            holder.binding.toTranslate.setTextColor(
+                holder.binding.root.context.resources.getColor(
+                    R.color.disabled_text
+                )
+            )
         } else {
-            holder.binding.root.background.level = 0
-            holder.binding.completeIcon.background.setLevel(0)
+            holder.binding.root.background.level = notSelectedFlag
+            holder.binding.completeIcon.background.setLevel(notSelectedFlag)
+            holder.binding.toTranslate.setTextColor(
+                holder.binding.root.context.resources.getColor(
+                    R.color.enabled_text
+                )
+            )
         }
+    }
+
+    fun prepareLongPressCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
         holder.binding.root.setOnLongClickListener(object: View.OnLongClickListener {
             override fun onLongClick(v: View?): Boolean {
                 clickListener.onLongPress(selectedSubject)
@@ -57,10 +90,6 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
             }
 
         })
-    }
-
-    override fun getItemCount(): Int {
-        return data.size
     }
 
     fun updateData(newData: List<SubjectToStudy>) {

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Dashboard colors -->
+    <color name="disabled_text">#808080</color>
+    <color name="enabled_text">@color/white</color>
+
+    <!-- Theme colors -->
     <color name="blue_light">#FF0023FF</color>
     <color name="blue_dark">#002366</color>
     <color name="grey">@android:color/darker_gray</color>
