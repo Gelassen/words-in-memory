@@ -26,7 +26,18 @@
         app:layout_anchor="@id/dashboardList"
         app:layout_anchorGravity="bottom|end"
         app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
-        app:backgroundTint="#0023FF" />
+        app:backgroundTint="@color/blue_light" />
+
+    <TextView
+        android:id="@+id/noContentPlaceholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/white"
+        android:layout_margin="24dp"
+        android:gravity="center"
+        android:text="@string/no_content_placeholder"
+        />
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
