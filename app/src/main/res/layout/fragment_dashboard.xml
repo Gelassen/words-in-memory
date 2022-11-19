@@ -53,9 +53,6 @@
             android:background="@color/colorActionBar"
             app:theme="@style/ToolBarStyle"
             app:layout_scrollFlags="scroll|enterAlways"/>
-<!--        <com.google.android.material.tabs.TabLayout-->
-<!--        ...-->
-<!--        app:layout_scrollFlags="scroll|enterAlways"/>-->
 
     </com.google.android.material.appbar.AppBarLayout>
 

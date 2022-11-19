@@ -130,6 +130,7 @@ class DashboardFragment: Fragment(),
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { it ->
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data)
+                binding.noContentPlaceholder.visibility = if (it.data.isEmpty()) { View.VISIBLE } else { View.GONE }
             }
         }
     }
