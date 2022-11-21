@@ -7,6 +7,7 @@ import androidx.test.filters.LargeTest
 import io.github.gelassen.wordinmemory.idlingresource.DataBindingIdlingResource
 import io.github.gelassen.wordinmemory.idlingresource.monitorActivity
 import io.github.gelassen.wordinmemory.robots.DashboardRobot
+import io.github.gelassen.wordinmemory.storage.AppDatabase
 import io.github.gelassen.wordinmemory.ui.MainActivity
 import org.junit.After
 import org.junit.Ignore
@@ -30,6 +31,8 @@ class DashboardTest : BaseTest() {
     override fun tearDown() {
         super.tearDown()
         IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+
+        AppDatabase.getInstance(appContext).subjectToStudyDao().clean()
     }
 
     @Test
@@ -53,7 +56,6 @@ class DashboardTest : BaseTest() {
 
         dashboardRobot
             .clickOnFabButton()
-        dashboardRobot
             .seesAddNewItemDialog()
 
         activityScenario.close()
@@ -104,27 +106,82 @@ class DashboardTest : BaseTest() {
 
         dashboardRobot
             .clickOnSubjectToStudy(0, testTxt)
-        dashboardRobot
             .seesTranslationOfSubject(testTxt + " / " + testTranslationTxt)
 
         activityScenario.close()
     }
 
-    @Ignore("Can't click on completed icon, click happens on a whole view. FIXME")
     @Test
     fun onClickFilterItem_oneItemMarkedAsCompleted_showAllItemsWithoutCompletedOne() {
         val activityScenario = ActivityScenario.launch(MainActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
-        generateContent()
+        generateContent(count = 2)
 
-        dashboardRobot.markSubjectAsCompleted(position = 0)
-        dashboardRobot.seesSpecificNumbersOfItemsInList(count = 16)
+        dashboardRobot
+            .markSubjectAsCompleted(position = 0)
+            .seesSpecificNumbersOfItemsInList(count = 1)
 
         activityScenario.close()
     }
 
-    private fun generateContent() {
-        for (idx in 0..16) {
+    @Test
+    fun onClickShowAll_twoItemsAreCompleted_showAllItems() {
+        val activityScenario = ActivityScenario.launch(MainActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        val totalCount = 5
+        generateContent(count = totalCount)
+        dashboardRobot.markSubjectAsCompleted(position = 0)
+        dashboardRobot.markSubjectAsCompleted(position = 1) // actually we can again select item at index 0
+
+        dashboardRobot.clickMenuShowAll()
+        dashboardRobot.seesSpecificNumbersOfItemsInList(count = totalCount)
+
+        activityScenario.close()
+    }
+
+    @Test
+    fun integrationTest_fromNoContentToContentWithCompletedItems_showCorrectStateOnEachStage() {
+        val activityScenario = ActivityScenario.launch(MainActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+
+        dashboardRobot
+            .seesToolbar()
+            .seesFloatingActionButton()
+            .seesNoContent()
+            .seesNoContentPlaceholder()
+
+        val testTxt = "伦敦是大不列颠的首都。"
+        val testTranslationTxt = "Lúndūn shì dàbùlièdiān de shǒudū. / Лондон - столица Великобритании."
+        generateSingleItem(testTxt, testTranslationTxt)
+        dashboardRobot
+            .seesListItemWithText(0, testTxt)
+            .doesNotSeeNoContentPlaceholder()
+            .doesNotSeeAddNewItemDialog()
+            .clickOnSubjectToStudy(0, testTxt)
+            .seesTranslationOfSubject(testTxt + " / " + testTranslationTxt)
+
+        dashboardRobot
+            .seesSpecificNumbersOfItemsInList(count = 1)
+            .markSubjectAsCompleted(position = 0)
+            .seesSpecificNumbersOfItemsInList(count = 0)
+
+        val totalCountToGenerate = 5
+        val totalCount = totalCountToGenerate + 1 // on the previous stage one item has been generated already
+        val totalCompleteItems = 2
+        generateContent(count = totalCountToGenerate)
+        dashboardRobot
+            .markSubjectAsCompleted(position = 0)
+            .markSubjectAsCompleted(position = 1) // actually we can again select item at index 0
+            .clickMenuShowAll()
+            .seesSpecificNumbersOfItemsInList(count = totalCount)
+            .clickMenuShowCompletedOnly()
+            .seesSpecificNumbersOfItemsInList(count = totalCount - totalCompleteItems)
+
+        activityScenario.close()
+    }
+
+    private fun generateContent(count: Int = 16) {
+        for (idx in 0 until count) {
             val testTxt = "${idx} 伦敦是大不列颠的首都。"
             val testTranslationTxt = "${idx} 伦敦是大不列颠的首都。 / ${idx} Лондон - столица Великобритании."
             generateSingleItem(testTxt, testTranslationTxt)
@@ -141,6 +198,6 @@ class DashboardTest : BaseTest() {
             .saveNewWord()
     }
 
-    // TODO add filter test, add integration test
+    // TODO add integration test
 
 }

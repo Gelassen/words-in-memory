@@ -21,4 +21,7 @@ interface SubjectToStudyDao {
 
     @Query("SELECT * FROM ${Const.tableName} WHERE not completed")
     fun getNotCompletedOnly(): Flow<List<SubjectToStudyEntity>>
+
+    @Query("DELETE FROM ${Const.tableName}")
+    fun clean()
 }
