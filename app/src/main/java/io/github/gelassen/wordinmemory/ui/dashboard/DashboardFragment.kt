@@ -14,6 +14,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.FragmentDashboardBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.utils.ConfigParams
 import javax.inject.Inject
 
 class DashboardFragment: Fragment(),
@@ -59,7 +60,10 @@ class DashboardFragment: Fragment(),
         val dr = ColorDrawable(getApiSupportColor())
         (requireActivity() as AppCompatActivity).supportActionBar!!.setBackgroundDrawable(dr)
 
-        binding.dashboardList.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        binding.dashboardList.layoutManager = StaggeredGridLayoutManager(
+            ConfigParams().getAmountOfColumnsForDashboard(requireActivity()),
+            StaggeredGridLayoutManager.VERTICAL
+        )
         binding.dashboardList.adapter = DashboardAdapter(this)
         binding.dashboardAddNewWord.apply {
             setOnClickListener {

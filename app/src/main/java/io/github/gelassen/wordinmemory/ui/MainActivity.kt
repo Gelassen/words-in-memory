@@ -16,10 +16,7 @@ class MainActivity: AppCompatActivity() {
         supportFragmentManager
             .beginTransaction()
             .add(R.id.container, DashboardFragment.newInstance())
-//            .addToBackStack(DashboardFragment.TAG)
             .commit()
-
-        Log.d("SIZE", "Screen is big enough: ${Qualifier().isScreenBigEnough(this)}")
     }
 
 
