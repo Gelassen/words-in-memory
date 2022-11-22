@@ -51,6 +51,10 @@ class AddItemDialogFragment: DialogFragment() {
         binding = AddItemFragmentBinding.inflate(LayoutInflater.from(context))
         binding.model = viewModel
         binding.title.visibility = View.VISIBLE
+        binding.save.setOnClickListener {
+            viewModel.addItem()
+            dismiss()
+        }
         preSetIfNecessary()
         return MaterialAlertDialogBuilder(requireContext())
             .setView(binding.root)
