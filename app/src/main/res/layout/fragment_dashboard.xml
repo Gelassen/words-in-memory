@@ -21,10 +21,10 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
         android:contentDescription="@string/dashboard_action_button"
-        android:foreground="@drawable/ic_add_item"
-        android:foregroundTint="@color/white"
         app:layout_anchor="@id/dashboardList"
         app:layout_anchorGravity="bottom|end"
+        app:tint="@android:color/white"
+        app:srcCompat="@drawable/ic_add_item"
         app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
         app:backgroundTint="@color/blue_light" />
 
