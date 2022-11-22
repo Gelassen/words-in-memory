@@ -167,7 +167,7 @@ class DashboardTest : BaseTest() {
 
         val totalCountToGenerate = 5
         val totalCount = totalCountToGenerate + 1 // on the previous stage one item has been generated already
-        val totalCompleteItems = 2
+        val totalCompleteItems = 3 // previous item is also counted
         generateContent(count = totalCountToGenerate)
         dashboardRobot
             .markSubjectAsCompleted(position = 0)
