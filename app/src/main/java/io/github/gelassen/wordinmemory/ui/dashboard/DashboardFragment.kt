@@ -13,6 +13,8 @@ import io.github.gelassen.wordinmemory.AppApplication
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.FragmentDashboardBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
+import io.github.gelassen.wordinmemory.dialogs.AddItemBottomSheetDialogFragment
+import io.github.gelassen.wordinmemory.dialogs.AddItemDialogProxy
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.utils.ConfigParams
 import javax.inject.Inject
@@ -67,10 +69,8 @@ class DashboardFragment: Fragment(),
         binding.dashboardList.adapter = DashboardAdapter(this)
         binding.dashboardAddNewWord.apply {
             setOnClickListener {
-                childFragmentManager.let {
-                    AddItemBottomSheetDialogFragment.newInstance(Bundle.EMPTY)
-                        .show(it, AddItemBottomSheetDialogFragment.TAG)
-                }
+                AddItemDialogProxy()
+                    .show(null, childFragmentManager, requireActivity())
             }
         }
 
@@ -113,10 +113,8 @@ class DashboardFragment: Fragment(),
     }
 
     override fun onLongPress(selectedSubject: SubjectToStudy) {
-        childFragmentManager.let {
-            AddItemBottomSheetDialogFragment.newInstance(selectedSubject)
-                .show(it, AddItemBottomSheetDialogFragment.TAG)
-        }
+        AddItemDialogProxy()
+            .show(selectedSubject, childFragmentManager, requireActivity())
     }
 
     @Suppress("DEPRECATION")

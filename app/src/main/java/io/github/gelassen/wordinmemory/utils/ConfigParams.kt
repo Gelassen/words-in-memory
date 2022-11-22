@@ -11,4 +11,8 @@ class ConfigParams {
         val deviceColumnsAmount = 1
         return if (qualifier.isTablet(activity)) tabletColumnsAmount else deviceColumnsAmount
     }
+
+    fun showDialogAsBottomSheet(activity: Activity): Boolean {
+        return qualifier.isScreenBigEnough(activity)
+    }
 }

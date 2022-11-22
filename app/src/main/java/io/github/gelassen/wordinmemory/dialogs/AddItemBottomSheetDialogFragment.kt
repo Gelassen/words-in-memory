@@ -1,4 +1,4 @@
-package io.github.gelassen.wordinmemory.ui.dashboard
+package io.github.gelassen.wordinmemory.dialogs
 
 import android.content.Context
 import android.os.Bundle
@@ -16,6 +16,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.AddItemFragmentBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel
 import javax.inject.Inject
 
 class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
@@ -37,7 +38,8 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
-        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(DashboardViewModel::class.java)
+        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(
+            DashboardViewModel::class.java)
         binding = AddItemFragmentBinding.inflate(inflater, container, false)
         binding.model = viewModel
         return binding.root

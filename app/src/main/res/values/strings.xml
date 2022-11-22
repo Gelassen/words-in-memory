@@ -3,11 +3,13 @@
 
     <!-- dashboard screen -->
     <string name="dashboard_action_button">Add new word</string>
-    <string name="offers_title">Offers</string>
-    <string name="demands_title">Demands</string>
-    <string name="to_translate_field">Enter the sentence you want to read and understand.</string>
+    <string name="to_translate_field">Enter a foreign word or sentence.</string>
     <string name="translation_field">Enter the translation.</string>
     <string name="show_all">Show all</string>
     <string name="non_completed_only">Show only not completed</string>
     <string name="no_content_placeholder">You have not added yet any word to study. Please tap on the + button.</string>
+    <!-- dialogs -->
+    <string name="dialog_add_new_tem_title">Add new word</string>
+    <string name="dialog_ok_button">OK</string>
+    <string name="dialog_cancel_button">@android:string/cancel</string>
 </resources>

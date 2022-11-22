@@ -81,7 +81,7 @@ class GroupChoiceView : LinearLayout {
     }
 
     private fun init(context: Context, attrs: AttributeSet?) {
-        enabledTextColor = ContextCompat.getColor(context, R.color.blue_light)
+/*        enabledTextColor = ContextCompat.getColor(context, R.color.blue_light)
         disabledTextColor = ContextCompat.getColor(context, R.color.grey)
 
         addView(
@@ -98,7 +98,7 @@ class GroupChoiceView : LinearLayout {
             )
         )
         findViewById<TextView>(R.id.offer_option).setTextColor(if (isOfferChosen) enabledTextColor else disabledTextColor)
-        findViewById<TextView>(R.id.demand_option).setTextColor(if (isOfferChosen) disabledTextColor else enabledTextColor)
+        findViewById<TextView>(R.id.demand_option).setTextColor(if (isOfferChosen) disabledTextColor else enabledTextColor)*/
     }
 
     private fun getView(text: String, id: Int) : TextView {
