@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="128dp"
+    android:foreground="?attr/selectableItemBackground"
     android:background="@drawable/bg_dashboard_item_level_list"
     android:clickable="true"
     android:padding="16dp"
