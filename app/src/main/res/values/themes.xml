@@ -33,6 +33,9 @@
         <item name="textAppearanceTitleSmall">@style/testColorHintExpanded</item>
         <item name="expandedHintEnabled">@style/testColorHintExpanded</item>
         <item name="expandedTitleTextColor">@style/testColorHintExpanded</item>
+        <item name="android:textSelectHandle">@color/blue_light</item>
+        <item name="android:textSelectHandleLeft">@color/blue_light</item>
+        <item name="android:textSelectHandleRight">@color/blue_light</item>
     </style>
 
     <style name="testColorHintExpanded" parent="TextAppearance.MaterialComponents.Caption">

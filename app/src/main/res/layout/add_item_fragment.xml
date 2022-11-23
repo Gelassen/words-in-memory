@@ -34,6 +34,11 @@
                 android:nextFocusRight="@+id/translateEditText"
                 android:singleLine="true"
                 android:textCursorDrawable="@drawable/bg_edit_text_cursor"
+                app:hintTextColor="@color/blue_light"
+                android:textColorHint="@color/blue_light"
+                android:textSelectHandle="@color/blue_light"
+                android:textSelectHandleLeft="@color/blue_light"
+                android:textSelectHandleRight="@color/blue_light"
                 android:text="@={model.wordToTranslate}"
                 />
 
