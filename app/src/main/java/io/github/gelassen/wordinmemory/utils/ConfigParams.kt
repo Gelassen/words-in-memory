@@ -14,5 +14,6 @@ class ConfigParams {
 
     fun showDialogAsBottomSheet(activity: Activity): Boolean {
         return qualifier.isScreenBigEnough(activity)
+                || qualifier.isTablet(activity)
     }
 }
