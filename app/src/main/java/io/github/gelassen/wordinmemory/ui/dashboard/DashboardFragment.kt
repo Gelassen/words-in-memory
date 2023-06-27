@@ -1,6 +1,8 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
+import android.content.Intent
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.*
@@ -90,6 +92,12 @@ class DashboardFragment: Fragment(),
             }
             R.id.showNonCompletedOnly -> {
                 viewModel.showNonCompletedOnly()
+                return true
+            }
+            R.id.privacyPolicy -> {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(getString(R.string.privacy_policy))
+                startActivity(intent)
                 return true
             }
             else -> { super.onOptionsItemSelected(item) }
