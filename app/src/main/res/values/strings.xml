@@ -8,9 +8,10 @@
     <string name="show_all">Show all</string>
     <string name="non_completed_only">Show only not completed</string>
     <string name="no_content_placeholder">You have not added yet any word to study. Please tap on the + button.</string>
+    <string name="privacy_policy" translatable="false">Privacy policy</string>
     <!-- dialogs -->
     <string name="dialog_add_new_tem_title">Add new word</string>
     <string name="dialog_ok_button">OK</string>
     <string name="dialog_cancel_button">@android:string/cancel</string>
-    <string name="privacy_policy" translatable="false">https://gelassen.github.io/blog/2020/08/25/google-play-privacy-policy.html</string>
+    <string name="privacy_policy_endpoint" translatable="false">https://gelassen.github.io/blog/2020/08/25/google-play-privacy-policy.html</string>
 </resources>

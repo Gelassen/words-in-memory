@@ -96,7 +96,7 @@ class DashboardFragment: Fragment(),
             }
             R.id.privacyPolicy -> {
                 val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse(getString(R.string.privacy_policy))
+                intent.data = Uri.parse(getString(R.string.privacy_policy_endpoint))
                 startActivity(intent)
                 return true
             }
