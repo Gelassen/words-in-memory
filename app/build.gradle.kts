@@ -10,9 +10,9 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "io.github.gelassen.workinmemory"
+        applicationId = "io.github.gelassen.wordsinmemory"
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
