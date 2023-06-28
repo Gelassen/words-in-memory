@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
+import io.github.gelassen.wordinmemory.utils.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -39,16 +40,21 @@ class DashboardViewModel
     val translation: ObservableField<String> = ObservableField<String>("")
 
     private var filterRequestJob: Job? = null
+    private val validator = Validator()
 
     fun addItem() {
         viewModelScope.launch {
-            val subject = SubjectToStudy(
-                uid = 0,
-                wordToTranslate.get()!!,
-                translation.get()!!,
-                false
-            )
-            storageRepository.saveSubject(subject)
+            if (validator.isAllowedWordOrSentence(wordToTranslate.get()!!, translation.get()!!)) {
+                val subject = SubjectToStudy(
+                    uid = 0,
+                    wordToTranslate.get()!!,
+                    translation.get()!!,
+                    false
+                )
+                storageRepository.saveSubject(subject)
+            } else {
+                addError("You can not add an empty word or word without translation")
+            }
             wordToTranslate.set("")
             translation.set("")
         }
@@ -103,6 +109,18 @@ class DashboardViewModel
                         state.copy(data = it, status = StateFlag.DATA)
                     }
                 }
+        }
+    }
+
+    fun addError(msg: String) {
+        state.update { state ->
+            state.copy(errors = state.errors.plus(msg))
+        }
+    }
+
+    fun removeError(error: String) {
+        state.update { state ->
+            state.copy(errors = state.errors.filter { it -> it != error })
         }
     }
 }

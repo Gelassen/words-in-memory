@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import io.github.gelassen.wordinmemory.AppApplication
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.FragmentDashboardBinding
@@ -141,7 +142,24 @@ class DashboardFragment: Fragment(),
             viewModel.uiState.collect { it ->
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data)
                 binding.noContentPlaceholder.visibility = if (it.data.isEmpty()) { View.VISIBLE } else { View.GONE }
+
+                if (it.errors.isNotEmpty()) {
+                    var error = it.errors.first()
+                    Snackbar.make(
+                        binding.noContentPlaceholder,
+                        error,
+                        Snackbar.LENGTH_SHORT
+                    )
+                        .addCallback(object : Snackbar.Callback() {
+                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                super.onDismissed(transientBottomBar, event)
+                                viewModel.removeError(error)
+                            }
+                        })
+                        .show()
+                }
             }
         }
+
     }
 }
