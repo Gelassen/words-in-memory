@@ -4,6 +4,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+    id("io.sentry.android.gradle") version "3.11.1"
 }
 
 android {
@@ -13,8 +14,8 @@ android {
         applicationId = "io.github.gelassen.wordsinmemory"
         minSdk = 21
         targetSdk = 33
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 5
+        versionName = "1.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,6 +59,11 @@ dependencies {
     implementation("com.google.android.material:material:1.7.0")
     implementation("androidx.databinding:databinding-runtime:4.2.2")
 
+    /* Sentry */
+    implementation("io.sentry:sentry-android:6.25.0") {
+        exclude(group = "androidx.lifecycle", module = "lifecycle-process")
+        exclude(group = "androidx.lifecycle", module = "lifecycle-common-java8")
+    }
 
     /* DI */
     implementation("com.google.dagger:dagger:2.42")

@@ -15,6 +15,21 @@
         android:theme="@style/Theme.WordInMemory"
         tools:targetApi="31">
 
+        <!-- Required: set your sentry.io project identifier (DSN) -->
+        <meta-data android:name="io.sentry.dsn" android:value="https://7e8d112970b44c2ba42561c8e26008d3@o4505527447781376.ingest.sentry.io/4505527455121408" />
+        <!-- enable automatic breadcrumbs for user interactions (clicks, swipes, scrolls) -->
+        <meta-data android:name="io.sentry.traces.user-interaction.enable" android:value="true" />
+        <!-- enable screenshot for crashes -->
+        <meta-data android:name="io.sentry.attach-screenshot" android:value="true" />
+        <!-- enable view hierarchy for crashes -->
+        <meta-data android:name="io.sentry.attach-view-hierarchy" android:value="true" />
+        <!-- enable the performance API by setting a sample-rate, adjust in production env -->
+        <meta-data android:name="io.sentry.traces.sample-rate" android:value="1.0" />
+        <!-- enable profiling when starting transactions, adjust in production env -->
+        <meta-data android:name="io.sentry.traces.profiling.sample-rate" android:value="1.0" />
+        <meta-data android:name="io.sentry.session-tracking.timeout-interval-millis" android:value="60000" />
+        <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
+
         <activity
             android:name="io.github.gelassen.wordinmemory.ui.MainActivity"
             android:windowSoftInputMode="adjustResize"
