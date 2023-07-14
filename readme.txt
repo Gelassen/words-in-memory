@@ -1,4 +1,7 @@
-# User Stories:
+### Dev email address
+words.inmemory.dev@yandex.com
+
+### User Stories:
 
 [done] As a user I want to enter a foreign word or sentence with its translation.
 
