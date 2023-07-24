@@ -1,8 +1,20 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
+import android.app.Application
+import android.util.Log
 import androidx.databinding.ObservableField
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.work.Operation.State.SUCCESS
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.R
+import io.github.gelassen.wordinmemory.backgroundjobs.BackupVocabularyWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.utils.Validator
@@ -15,7 +27,8 @@ import javax.inject.Inject
 data class Model(
     val data: List<SubjectToStudy> = mutableListOf(),
     val isLoading: Boolean = false,
-    val errors: List<String> = emptyList(),
+    val errors: List<String> = mutableListOf(),
+    val messages: List<String> = mutableListOf(),
     val status: StateFlag = StateFlag.NONE
 )
 
@@ -26,9 +39,10 @@ enum class StateFlag {
 
 class DashboardViewModel
     @Inject constructor(
+        val app: Application,
         val storageRepository: StorageRepository
     )
-    : ViewModel() {
+    : AndroidViewModel(app) {
 
     private val state: MutableStateFlow<Model> = MutableStateFlow(Model())
     val uiState: StateFlow<Model> = state
@@ -121,6 +135,34 @@ class DashboardViewModel
     fun removeError(error: String) {
         state.update { state ->
             state.copy(errors = state.errors.filter { it -> it != error })
+        }
+    }
+    fun backupVocabulary() {
+        viewModelScope.launch {
+            val workManager = WorkManager.getInstance(app)
+            val workRequest = workManager.getWorkRequest<BackupVocabularyWorker>(
+                BackupVocabularyWorker.Builder.build()
+            )
+            workManager.enqueue(workRequest)
+            workManager
+                .getWorkInfoByIdLiveData(workRequest.id)
+                .asFlow()
+                .onStart { state.update { state -> state.copy(isLoading = false) } }
+                .onCompletion { state.update { state -> state.copy(isLoading = false) } }
+                .collect {
+                    when(it.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            val msg = app.getString(R.string.msg_database_backup_ok)
+                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
+                        }
+                        WorkInfo.State.FAILED -> {
+                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
+                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
+                        }
+                        else -> { Log.d(App.TAG, "[${workRequest.javaClass.simpleName}] unexpected state on collect with state $it") }
+                    }
+                }
+
         }
     }
 }

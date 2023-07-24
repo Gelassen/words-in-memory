@@ -14,7 +14,7 @@ class AppApplication: Application() {
 
         diComponent = DaggerAppComponent
             .builder()
-            .appModule(AppModule(applicationContext))
+            .appModule(AppModule(this))
             .build()
     }
 

@@ -40,24 +40,29 @@ android {
     testOptions {
         animationsDisabled = false
     }
+    namespace = "io.github.gelassen.wordinmemory"
 }
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.appcompat:appcompat:1.5.1")
+    implementation("androidx.core:core-ktx:1.10.1")
+    implementation("androidx.appcompat:appcompat:1.6.1")
 
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    implementation("androidx.room:room-runtime:2.4.3")
-    implementation("androidx.room:room-ktx:2.4.3")
-    annotationProcessor("androidx.room:room-compiler:2.4.3")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+    implementation("androidx.room:room-runtime:2.5.2")
+    implementation("androidx.room:room-ktx:2.5.2")
+    implementation("androidx.work:work-runtime:2.8.1")
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 
-    kapt("androidx.room:room-compiler:2.4.3")
+    annotationProcessor("androidx.room:room-compiler:2.5.2")
 
-    implementation("com.google.android.material:material:1.7.0")
-    implementation("androidx.databinding:databinding-runtime:4.2.2")
+    kapt("androidx.room:room-compiler:2.5.2")
+
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("androidx.databinding:databinding-runtime:8.0.2")
 
     /* Sentry */
     implementation("io.sentry:sentry-android:6.25.0") {
