@@ -3,14 +3,17 @@ package io.github.gelassen.wordinmemory.repository
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.model.toStorage
 import io.github.gelassen.wordinmemory.storage.SubjectToStudyDao
+import io.github.gelassen.wordinmemory.storage.SubjectToStudyEntity
 import io.github.gelassen.wordinmemory.storage.toDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class StorageRepository(val subjectsDao: SubjectToStudyDao) {
 
-    suspend fun saveSubject(subj: SubjectToStudy) {
-        subjectsDao.insertAll(subj.toStorage())
+    suspend fun saveSubject(vararg subj: SubjectToStudy) {
+        val dbEntities = mutableListOf<SubjectToStudyEntity>()
+        subj.forEach { dbEntities.add(it.toStorage()) }
+        subjectsDao.insertAll(*dbEntities.map { it }.toTypedArray())
     }
 
     suspend fun getSubjects(): Flow<List<SubjectToStudy>> {

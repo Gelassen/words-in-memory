@@ -14,6 +14,7 @@ import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.backgroundjobs.BackupVocabularyWorker
 import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.RestoreVocabularyWorker
 import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
@@ -154,6 +155,36 @@ class DashboardViewModel
                         WorkInfo.State.SUCCEEDED -> {
                             val msg = app.getString(R.string.msg_database_backup_ok)
                             state.update { state -> state.copy(messages = state.messages.plus(msg)) }
+                        }
+                        WorkInfo.State.FAILED -> {
+                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
+                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
+                        }
+                        else -> { Log.d(App.TAG, "[${workRequest.javaClass.simpleName}] unexpected state on collect with state $it") }
+                    }
+                }
+
+        }
+    }
+
+    fun restoreVocabulary() {
+        viewModelScope.launch {
+            val workManager = WorkManager.getInstance(app)
+            val workRequest = workManager.getWorkRequest<RestoreVocabularyWorker>(
+                RestoreVocabularyWorker.Builder.build()
+            )
+            workManager.enqueue(workRequest)
+            workManager
+                .getWorkInfoByIdLiveData(workRequest.id)
+                .asFlow()
+                .onStart { state.update { state -> state.copy(isLoading = false) } }
+                .onCompletion { state.update { state -> state.copy(isLoading = false) } }
+                .collect {
+                    when(it.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+//                            val msg = app.getString(R.string.msg_database_backup_ok)
+//                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
+                            // no op, data should appear in list
                         }
                         WorkInfo.State.FAILED -> {
                             val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String

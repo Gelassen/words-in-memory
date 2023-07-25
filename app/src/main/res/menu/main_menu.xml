@@ -10,6 +10,9 @@
     <item android:id="@+id/backupVocabulary"
         android:title="@string/menu_backup_vocabulary" />
 
+    <item android:id="@+id/restoreVocabulary"
+        android:title="@string/menu_restore_vocabulary" />
+
     <item android:id="@+id/privacyPolicy"
         android:title="@string/menu_privacy_policy" />
 

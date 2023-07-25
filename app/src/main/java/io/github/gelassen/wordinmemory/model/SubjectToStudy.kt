@@ -2,6 +2,7 @@ package io.github.gelassen.wordinmemory.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import de.siegmar.fastcsv.reader.CsvRow
 import io.github.gelassen.wordinmemory.storage.SubjectToStudyEntity
 import org.json.JSONObject
 
@@ -88,5 +89,14 @@ fun SubjectToStudy.fromStorage(subjectToStudy: SubjectToStudyEntity): SubjectToS
         subjectToStudy.subjectToTranslate,
         subjectToStudy.translation,
         subjectToStudy.isCompleted
+    )
+}
+
+fun SubjectToStudy.fromCsvRow(csvRow: CsvRow): SubjectToStudy {
+    return SubjectToStudy(
+        csvRow.getField(0).toInt(),
+        csvRow.getField(1),
+        csvRow.getField(2),
+        csvRow.getField(3).toBoolean()
     )
 }

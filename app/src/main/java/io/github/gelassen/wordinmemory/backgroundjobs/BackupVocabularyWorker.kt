@@ -1,6 +1,7 @@
 package io.github.gelassen.wordinmemory.backgroundjobs
 
 import android.content.Context
+import android.icu.number.NumberRangeFormatter.RangeIdentityResult
 import android.os.Environment
 import android.util.Log
 import androidx.work.Data
@@ -10,8 +11,10 @@ import de.siegmar.fastcsv.writer.CsvWriter
 import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategy
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
+import io.github.gelassen.wordinmemory.utils.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,40 +36,22 @@ class BackupVocabularyWorker(
     }
 
     override suspend fun doWork(): Result {
+        var result = Result.failure()
         withContext(backgroundDispatcher) {
-            if (isExternalStorageAvailable()) {
+            if (FileUtils().isExternalStorageAvailable()) {
                 val dataset = storageRepository.getSubjectsNonFlow()
-                writeDatasetToExternalFile(dataset)
+                result = writeDatasetToExternalFile(dataset)
             }
         }
-        return Result.success()
-    }
-
-    private fun isExternalStorageAvailable(): Boolean {
-        var isExternalStorageAvailable = false
-        var isExternalStorageWriteable = false
-        val state = Environment.getExternalStorageState()
-        if (Environment.MEDIA_MOUNTED == state) {
-            isExternalStorageWriteable = true
-            isExternalStorageAvailable = isExternalStorageWriteable
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY == state) {
-            isExternalStorageAvailable = true
-            isExternalStorageWriteable = false
-        } else {
-            isExternalStorageWriteable = false
-            isExternalStorageAvailable = isExternalStorageWriteable
-        }
-        Log.d(App.TAG, "External storage state availability (${isExternalStorageAvailable}) " +
-                "and writeability(${isExternalStorageWriteable})")
-        return isExternalStorageAvailable && isExternalStorageWriteable
+        return result
     }
 
     private fun writeDatasetToExternalFile(dataset: List<SubjectToStudy>): Result {
         var result: Result = Result.success()
         try {
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val destinationPath = File(downloadsDir, "WordsInMemory")
-            val destinationFile = File(destinationPath, "WordsInMemory-vocabulary.csv")
+            val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
+            val destinationFile = File(destinationPath, context.getString(R.string.backup_file))
             destinationFile.mkdirs()
             val sw = StringWriter()
             val csvWriter = prepareCsvWriter(sw)

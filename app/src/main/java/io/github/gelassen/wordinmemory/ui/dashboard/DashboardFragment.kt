@@ -99,6 +99,10 @@ class DashboardFragment: Fragment(),
                 viewModel.backupVocabulary()
                 return true
             }
+            R.id.restoreVocabulary -> {
+                viewModel.restoreVocabulary()
+                return true
+            }
             R.id.privacyPolicy -> {
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.data = Uri.parse(getString(R.string.privacy_policy_endpoint))

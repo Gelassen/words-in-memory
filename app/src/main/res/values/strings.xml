@@ -11,6 +11,7 @@
     <string name="menu_show_all">Show all</string>
     <string name="menu_non_completed_only">Show only not completed</string>
     <string name="menu_backup_vocabulary">Backup vocabulary</string>
+    <string name="menu_restore_vocabulary">Restore vocabulary</string>
     <string name="menu_privacy_policy" translatable="false">Privacy policy</string>
 
     <!-- system messages -->
