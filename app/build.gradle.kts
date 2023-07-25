@@ -56,25 +56,24 @@ dependencies {
     implementation("androidx.room:room-ktx:2.5.2")
     implementation("androidx.work:work-runtime:2.8.1")
     implementation("androidx.work:work-runtime-ktx:2.8.1")
-
-    annotationProcessor("androidx.room:room-compiler:2.5.2")
-
-    kapt("androidx.room:room-compiler:2.5.2")
-
-    implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.databinding:databinding-runtime:8.0.2")
 
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("de.siegmar:fastcsv:2.2.2")
     /* Sentry */
     implementation("io.sentry:sentry-android:6.25.0") {
         exclude(group = "androidx.lifecycle", module = "lifecycle-process")
         exclude(group = "androidx.lifecycle", module = "lifecycle-common-java8")
     }
-
     /* DI */
     implementation("com.google.dagger:dagger:2.42")
     implementation("com.google.dagger:dagger-android-support:2.42")
 
+    annotationProcessor("androidx.room:room-compiler:2.5.2")
+
+    kapt("androidx.room:room-compiler:2.5.2")
     kapt("com.google.dagger:dagger-compiler:2.42")
+
     /* kapt android tests */
     kaptAndroidTest("com.google.dagger:dagger-compiler:2.42")
 

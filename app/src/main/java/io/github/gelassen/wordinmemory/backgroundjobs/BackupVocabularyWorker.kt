@@ -6,15 +6,18 @@ import android.util.Log
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import de.siegmar.fastcsv.writer.CsvWriter
+import de.siegmar.fastcsv.writer.LineDelimiter
+import de.siegmar.fastcsv.writer.QuoteStrategy
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
-import java.nio.charset.Charset
+import java.io.StringWriter
+import java.util.Date
 
 
 class BackupVocabularyWorker(
@@ -31,22 +34,12 @@ class BackupVocabularyWorker(
 
     override suspend fun doWork(): Result {
         withContext(backgroundDispatcher) {
-            backupToCsvFile()
+            if (isExternalStorageAvailable()) {
+                val dataset = storageRepository.getSubjectsNonFlow()
+                writeDatasetToExternalFile(dataset)
+            }
         }
         return Result.success()
-    }
-
-    suspend fun backupToCsvFile() {
-        // TODO check write to external storage permissions
-        // TODO check SD card availability
-        // TODO get cursor with data from database
-        // TODO write a valid csv file
-
-        if (isExternalStorageAvailable()) {
-            createTestFileInSharedFolder()
-            val dataset = storageRepository.getSubjectsNonFlow()
-
-        }
     }
 
     private fun isExternalStorageAvailable(): Boolean {
@@ -68,7 +61,34 @@ class BackupVocabularyWorker(
         return isExternalStorageAvailable && isExternalStorageWriteable
     }
 
-    fun createTestFileInSharedFolder() {
+    private fun writeDatasetToExternalFile(dataset: List<SubjectToStudy>): Result {
+        var result: Result = Result.success()
+        try {
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val destinationPath = File(downloadsDir, "WordsInMemory")
+            val destinationFile = File(destinationPath, "WordsInMemory-vocabulary.csv")
+            destinationFile.mkdirs()
+            val sw = StringWriter()
+            val csvWriter = prepareCsvWriter(sw)
+            csvWriter.writeRow("uid", "toTranslate", "translation", "isCompleted")
+            dataset.forEach { it -> csvWriter.writeRow(it.uid.toString(), it.toTranslate, it.translation, it.isCompleted.toString()) }
+        } catch (ex: Exception) {
+            Log.e(App.TAG, "Failed to backup database into external storage file", ex)
+            result = Result.failure()
+        }
+        return result
+    }
+
+    private fun prepareCsvWriter(sw: StringWriter): CsvWriter {
+        return CsvWriter.builder()
+            .fieldSeparator(';')
+            .quoteCharacter('\'')
+            .quoteStrategy(QuoteStrategy.ALWAYS)
+            .lineDelimiter(LineDelimiter.LF)
+            .build(sw)
+            .writeComment("File created by WordsInMemory app on ${Date(System.currentTimeMillis())}")
+    }
+/*    fun createTestFileInSharedFolder() {
         Log.d(App.TAG, "[start] createTestFileInSharedFolder")
         val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val destinationPath = File(downloadsDir, "WordsInMemory")
@@ -87,5 +107,5 @@ class BackupVocabularyWorker(
             outputStream?.close()
             Log.d(App.TAG, "[end] createTestFileInSharedFolder")
         }
-    }
+    }*/
 }
