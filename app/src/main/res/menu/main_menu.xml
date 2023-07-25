@@ -2,12 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/showAll"
-        android:title="@string/show_all" />
+        android:title="@string/menu_show_all" />
 
     <item android:id="@+id/showNonCompletedOnly"
-        android:title="@string/non_completed_only" />
+        android:title="@string/menu_non_completed_only" />
+
+    <item android:id="@+id/backupVocabulary"
+        android:title="@string/menu_backup_vocabulary" />
 
     <item android:id="@+id/privacyPolicy"
-        android:title="@string/privacy_policy" />
+        android:title="@string/menu_privacy_policy" />
 
 </menu>

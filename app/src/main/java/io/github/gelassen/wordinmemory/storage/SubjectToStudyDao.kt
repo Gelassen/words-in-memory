@@ -16,6 +16,9 @@ interface SubjectToStudyDao {
     @Query("SELECT * FROM ${Const.tableName}")
     fun getAll(): Flow<List<SubjectToStudyEntity>>
 
+    @Query("SELECT * FROM ${Const.tableName}")
+    suspend fun getAllNonFlow(): List<SubjectToStudyEntity>
+
     @Delete
     fun delete(subject: SubjectToStudyEntity)
 

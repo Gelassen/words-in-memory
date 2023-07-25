@@ -95,6 +95,10 @@ class DashboardFragment: Fragment(),
                 viewModel.showNonCompletedOnly()
                 return true
             }
+            R.id.backupVocabulary -> {
+                viewModel.backupVocabulary()
+                return true
+            }
             R.id.privacyPolicy -> {
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.data = Uri.parse(getString(R.string.privacy_policy_endpoint))
