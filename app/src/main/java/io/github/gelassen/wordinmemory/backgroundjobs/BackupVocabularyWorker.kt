@@ -19,7 +19,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileWriter
 import java.io.StringWriter
+import java.io.Writer
 import java.util.Date
 
 
@@ -52,9 +54,8 @@ class BackupVocabularyWorker(
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
             val destinationFile = File(destinationPath, context.getString(R.string.backup_file))
-            destinationFile.mkdirs()
-            val sw = StringWriter()
-            val csvWriter = prepareCsvWriter(sw)
+            val fileWriter = FileWriter(destinationFile, true)
+            val csvWriter = prepareCsvWriter(fileWriter)
             csvWriter.writeRow("uid", "toTranslate", "translation", "isCompleted")
             dataset.forEach { it -> csvWriter.writeRow(it.uid.toString(), it.toTranslate, it.translation, it.isCompleted.toString()) }
         } catch (ex: Exception) {
@@ -64,33 +65,14 @@ class BackupVocabularyWorker(
         return result
     }
 
-    private fun prepareCsvWriter(sw: StringWriter): CsvWriter {
+    private fun prepareCsvWriter(fileWriter: Writer): CsvWriter {
         return CsvWriter.builder()
             .fieldSeparator(';')
             .quoteCharacter('\'')
             .quoteStrategy(QuoteStrategy.ALWAYS)
             .lineDelimiter(LineDelimiter.LF)
-            .build(sw)
+            .build(fileWriter)
             .writeComment("File created by WordsInMemory app on ${Date(System.currentTimeMillis())}")
     }
-/*    fun createTestFileInSharedFolder() {
-        Log.d(App.TAG, "[start] createTestFileInSharedFolder")
-        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val destinationPath = File(downloadsDir, "WordsInMemory")
-        val destinationFile = File(destinationPath, "test.txt")
-        var outputStream: FileOutputStream? = null
-        try {
-            destinationPath.mkdirs()
 
-            outputStream = FileOutputStream(destinationFile)
-            val testStr = "Hello from WordsInMemory app!"
-            outputStream.write(testStr.toByteArray(Charset.defaultCharset()))
-            outputStream.flush()
-        } catch (ex: Exception) {
-            Log.e(App.TAG, "Failed to write into shared folder", ex)
-        } finally {
-            outputStream?.close()
-            Log.d(App.TAG, "[end] createTestFileInSharedFolder")
-        }
-    }*/
 }
