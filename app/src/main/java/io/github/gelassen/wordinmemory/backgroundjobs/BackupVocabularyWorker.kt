@@ -12,6 +12,7 @@ import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategy
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
+import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker.Consts.KEY_ERROR_MSG
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.model.convertToJson
 import io.github.gelassen.wordinmemory.repository.StorageRepository
@@ -55,11 +56,13 @@ class BackupVocabularyWorker(
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
             val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json))
-//            writeAsCsvFile(dataset, destinationFile)
+            /*writeAsCsvFile(dataset, destinationFile)*/
             writeAsJsonArray(dataset, destinationFile)
         } catch (ex: Exception) {
-            Log.e(App.TAG, "Failed to backup database into external storage file", ex)
-            result = Result.failure()
+            val errorMsg = "Failed to backup database into external storage file"
+            Log.e(App.TAG, errorMsg, ex)
+            val outputData = workDataOf(KEY_ERROR_MSG to errorMsg)
+            result = Result.failure(outputData)
         }
         return result
     }
@@ -72,6 +75,7 @@ class BackupVocabularyWorker(
         fileWriter.flush()
         fileWriter.close()
     }
+
     /**
      * There is an unresolved issue with write over FastCSV library, that's why it is left
      * for unused:
