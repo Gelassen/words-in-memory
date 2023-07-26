@@ -13,14 +13,15 @@ import de.siegmar.fastcsv.writer.QuoteStrategy
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.model.convertToJson
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.utils.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import java.io.File
 import java.io.FileWriter
-import java.io.StringWriter
 import java.io.Writer
 import java.util.Date
 
@@ -53,16 +54,34 @@ class BackupVocabularyWorker(
         try {
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
-            val destinationFile = File(destinationPath, context.getString(R.string.backup_file))
-            val fileWriter = FileWriter(destinationFile, true)
-            val csvWriter = prepareCsvWriter(fileWriter)
-            csvWriter.writeRow("uid", "toTranslate", "translation", "isCompleted")
-            dataset.forEach { it -> csvWriter.writeRow(it.uid.toString(), it.toTranslate, it.translation, it.isCompleted.toString()) }
+            val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json))
+//            writeAsCsvFile(dataset, destinationFile)
+            writeAsJsonArray(dataset, destinationFile)
         } catch (ex: Exception) {
             Log.e(App.TAG, "Failed to backup database into external storage file", ex)
             result = Result.failure()
         }
         return result
+    }
+
+    private fun writeAsJsonArray(dataset: List<SubjectToStudy>, destinationFile: File) {
+        val jsonArray = JSONArray()
+        dataset.forEach { it -> jsonArray.put(it.convertToJson()) }
+        val fileWriter = FileWriter(destinationFile, true)
+        fileWriter.write(jsonArray.toString())
+        fileWriter.flush()
+        fileWriter.close()
+    }
+    /**
+     * There is an unresolved issue with write over FastCSV library, that's why it is left
+     * for unused:
+     * https://github.com/osiegmar/FastCSV/issues/81
+     * */
+    private fun writeAsCsvFile(dataset: List<SubjectToStudy>, destinationFile: File) {
+        val fileWriter = FileWriter(destinationFile, true)
+        val csvWriter = prepareCsvWriter(fileWriter)
+        csvWriter.writeRow("uid", "toTranslate", "translation", "isCompleted")
+        dataset.forEach { it -> csvWriter.writeRow(it.uid.toString(), it.toTranslate, it.translation, it.isCompleted.toString()) }
     }
 
     private fun prepareCsvWriter(fileWriter: Writer): CsvWriter {
