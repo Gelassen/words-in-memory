@@ -48,17 +48,15 @@ class RestoreVocabularyWorker(
         try {
             if (!FileUtils().isExternalStorageAvailable()) {
                 val errorMsg = "External storage is not available"
-                val outputData = workDataOf(KEY_ERROR_MSG to errorMsg)
-                result = Result.failure(outputData)
+                result = prepareFailureResult(errorMsg)
             } else if (!isThereBackupFile()) {
                 val errorMsg = "There is no backup file ${context.getString(R.string.backup_file_csv)}"
-                val outputData = workDataOf(KEY_ERROR_MSG to errorMsg)
-                result = Result.failure(outputData)
+                result = prepareFailureResult(errorMsg)
             } else if (!inputData.hasKeyWithValueOfType<String>(Builder.EXTRA_BACKUP_URI)) {
                 val errorMsg = "There is no uri for backup data. Did you forget to pass it when had prepared Worker?"
                 result = prepareFailureResult(errorMsg)
             } else {
-                val backupUri =Uri.parse(inputData.getString(Builder.EXTRA_BACKUP_URI))
+                val backupUri = Uri.parse(inputData.getString(Builder.EXTRA_BACKUP_URI))
                 val dataset = getDataFromBackup(backupUri)
                 // TODO reset uid to zero to create new ones - it will allow to integrated existing backup with recently added rows
                 storageRepository.saveSubject(*dataset.map { it }.toTypedArray())
@@ -86,32 +84,9 @@ class RestoreVocabularyWorker(
 
     private fun getDataFromBackup(backupUri: Uri): MutableList<SubjectToStudy> {
         val result = mutableListOf<SubjectToStudy>()
-//        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//        val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
-//        val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json/*backup_file_csv*/))
-//        val destinationFile = File(backupUri.path!!)
-//        destinationFile.setReadable(true)
-//        destinationFile.setWritable(true)
-        /*readCsvFile(destinationFile)*/
         Log.d(App.TAG, "Plain read from uri $backupUri")
         result.addAll(readJsonFile(backupUri))
         return result
-    }
-
-    @Throws(IOException::class)
-    fun readTextFromUri(context: Context, uri: Uri?): String {
-        val stringBuilder = StringBuilder()
-        context.contentResolver.openInputStream(uri!!).use { inputStream ->
-            BufferedReader(
-                InputStreamReader(Objects.requireNonNull(inputStream))
-            ).use { reader ->
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    stringBuilder.append(line)
-                }
-            }
-        }
-        return stringBuilder.toString()
     }
 
     private fun readJsonFile(backupUri: Uri): MutableList<SubjectToStudy> {
@@ -119,6 +94,10 @@ class RestoreVocabularyWorker(
         return getDatasetFromText(jsonArrayAsString)
     }
 
+    @Deprecated("On Android 13 Storage Access Framework (SAF) is the only option to access " +
+            "file from public folder which is not image or video. It uses uri which I didn't managed " +
+            "to read as file, but only as an input stream. A readJsonFile(backupUri: Uri) should be " +
+            "used in a favor of readJsonFile(destinationFile: File)")
     private fun readJsonFile(destinationFile: File): MutableList<SubjectToStudy> {
         val fileReader = FileReader(destinationFile)
         val jsonArrayAsString = fileReader.readText()
@@ -157,6 +136,22 @@ class RestoreVocabularyWorker(
             result.add(SubjectToStudy().fromCsvRow(row))
         }
         return result
+    }
+
+    @Throws(IOException::class)
+    fun readTextFromUri(context: Context, uri: Uri?): String {
+        val stringBuilder = StringBuilder()
+        context.contentResolver.openInputStream(uri!!).use { inputStream ->
+            BufferedReader(
+                InputStreamReader(Objects.requireNonNull(inputStream))
+            ).use { reader ->
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    stringBuilder.append(line)
+                }
+            }
+        }
+        return stringBuilder.toString()
     }
 
 }

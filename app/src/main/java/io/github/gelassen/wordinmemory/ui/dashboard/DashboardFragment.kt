@@ -8,9 +8,12 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -54,18 +57,21 @@ class DashboardFragment: Fragment(),
             if (isGranted) {
                 // Permission is granted. Continue the action or workflow in your
                 // app.
-                Log.d(App.TAG, "READ_EXTERNAL_STORAGE Permission has been granted for restoreVocabulary()")
+                /*Log.d(App.TAG, "READ_EXTERNAL_STORAGE Permission has been granted for restoreVocabulary()")*/
                 /*viewModel.restoreVocabulary()*/
+                Log.d(App.TAG, "WRITE_EXTERNAL_STORAGE Permission has been granted for backupVocabulary()")
+                viewModel.backupVocabulary()
             } else {
                 // Explain to the user that the feature is unavailable because the
                 // feature requires a permission that the user has denied. At the
                 // same time, respect the user's decision. Don't link to system
                 // settings in an effort to convince the user to change their
                 // decision.
-                Log.d(App.TAG, "READ_EXTERNAL_STORAGE Permission has been declined for restoreVocabulary()")
+//                Log.d(App.TAG, "READ_EXTERNAL_STORAGE Permission has been declined for restoreVocabulary()")
+                Log.d(App.TAG, "WRITE_EXTERNAL_STORAGE Permission has been declined for backupVocabulary()")
                 Snackbar.make(
                     binding.noContentPlaceholder,
-                    "You have to give WordsInMemory app this permission to restore your vocabulary",
+                    "You have to give WordsInMemory app this permission to backup your vocabulary",
                     Snackbar.LENGTH_SHORT
                 ).show()
             }
@@ -93,25 +99,29 @@ class DashboardFragment: Fragment(),
         backupRequestLauncher.launch(intent)
     }
 
-/*    private fun requestPermissions(operationUnderPermission: () -> Unit) {
-        val selfPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+    /**
+     * This is required at least on Android 7 and likely below
+     * */
+    private fun requestPermissions(operationUnderPermission: () -> Unit) {
+        val selfPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
         if (selfPermission == PackageManager.PERMISSION_GRANTED) {
             operationUnderPermission()
         } else {
             requestPermissionLauncher.launch(
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
-            *//*
-                This code would not work: https://stackoverflow.com/a/33080682/3649629
+
+/*                This code would not work: https://stackoverflow.com/a/33080682/3649629
                 use ActivityResultLauncher instead
 
                 ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                 PERMISSION_REQUEST_CODE
-            )*//*
+            )
+ */
         }
-    }*/
+    }
 
 /*    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -204,7 +214,7 @@ class DashboardFragment: Fragment(),
                 return true
             }
             R.id.backupVocabulary -> {
-                viewModel.backupVocabulary()
+                requestPermissions { viewModel.backupVocabulary() }
                 return true
             }
             R.id.restoreVocabulary -> {
