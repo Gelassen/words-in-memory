@@ -68,7 +68,7 @@ fun SubjectToStudy.convertToJson(): String {
 fun SubjectToStudy.fromJson(subj: String): SubjectToStudy {
     val json = JSONObject(subj)
     val uid = json.optInt(SubjectToStudyConst.UID)
-    val toTranslate = json.optString(SubjectToStudyConst.DATA)
+    val toTranslate = json.optString(SubjectToStudyConst.TO_TRANSLATE)
     val isCompleted = json.optBoolean(SubjectToStudyConst.IS_COMPLETED)
     val translation = json.optString(SubjectToStudyConst.TRANSLATION)
     return SubjectToStudy(uid, toTranslate, translation, isCompleted)

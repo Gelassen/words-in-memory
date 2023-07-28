@@ -1,6 +1,7 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
@@ -167,11 +168,11 @@ class DashboardViewModel
         }
     }
 
-    fun restoreVocabulary() {
+    fun restoreVocabulary(backupUri: Uri) {
         viewModelScope.launch {
             val workManager = WorkManager.getInstance(app)
             val workRequest = workManager.getWorkRequest<RestoreVocabularyWorker>(
-                RestoreVocabularyWorker.Builder.build()
+                RestoreVocabularyWorker.Builder.build(backupUri)
             )
             workManager.enqueue(workRequest)
             workManager
@@ -185,6 +186,7 @@ class DashboardViewModel
 //                            val msg = app.getString(R.string.msg_database_backup_ok)
 //                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
                             // no op, data should appear in list
+                            Log.d(App.TAG, "Command is successfully finished")
                         }
                         WorkInfo.State.FAILED -> {
                             val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String

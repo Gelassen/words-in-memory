@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileWriter
 import java.io.Writer
@@ -56,7 +57,10 @@ class BackupVocabularyWorker(
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
             val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json))
-            /*writeAsCsvFile(dataset, destinationFile)*/
+            destinationPath.mkdirs()
+            destinationFile.setReadable(true)
+            destinationFile.setWritable(true)
+//            writeAsCsvFile(dataset, destinationFile)
             writeAsJsonArray(dataset, destinationFile)
         } catch (ex: Exception) {
             val errorMsg = "Failed to backup database into external storage file"
@@ -69,7 +73,7 @@ class BackupVocabularyWorker(
 
     private fun writeAsJsonArray(dataset: List<SubjectToStudy>, destinationFile: File) {
         val jsonArray = JSONArray()
-        dataset.forEach { it -> jsonArray.put(it.convertToJson()) }
+        dataset.forEach { it -> jsonArray.put(JSONObject(it.convertToJson())) }
         val fileWriter = FileWriter(destinationFile, true)
         fileWriter.write(jsonArray.toString())
         fileWriter.flush()
@@ -86,6 +90,7 @@ class BackupVocabularyWorker(
         val csvWriter = prepareCsvWriter(fileWriter)
         csvWriter.writeRow("uid", "toTranslate", "translation", "isCompleted")
         dataset.forEach { it -> csvWriter.writeRow(it.uid.toString(), it.toTranslate, it.translation, it.isCompleted.toString()) }
+        csvWriter.close()
     }
 
     private fun prepareCsvWriter(fileWriter: Writer): CsvWriter {
