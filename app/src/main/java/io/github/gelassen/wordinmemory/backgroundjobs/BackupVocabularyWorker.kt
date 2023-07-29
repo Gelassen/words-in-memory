@@ -54,9 +54,12 @@ class BackupVocabularyWorker(
     private fun writeDatasetToExternalFile(dataset: List<SubjectToStudy>): Result {
         var result: Result = Result.success()
         try {
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
             val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
             val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json))
+            if (destinationFile.exists()) {
+                destinationFile.delete()
+            }
             destinationPath.mkdirs()
             destinationFile.setReadable(true)
             destinationFile.setWritable(true)
@@ -72,6 +75,7 @@ class BackupVocabularyWorker(
     }
 
     private fun writeAsJsonArray(dataset: List<SubjectToStudy>, destinationFile: File) {
+        Log.d(App.TAG, "Save file to a destination folder $destinationFile")
         val jsonArray = JSONArray()
         dataset.forEach { it -> jsonArray.put(JSONObject(it.convertToJson())) }
         val fileWriter = FileWriter(destinationFile, true)

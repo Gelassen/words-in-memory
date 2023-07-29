@@ -49,6 +49,12 @@ class DashboardFragment: Fragment(),
 
     private lateinit var binding: FragmentDashboardBinding
 
+    // FIXME on some old versions of Android (at least on Android 7 and below API 30) files in
+    // Downloads folder are not shown open via SAF and using default Files catalog explorer
+    // (using non-default one works without any issues). Possible workaround don't use SAF
+    // on this platforms versions (use old-school way to write\read from sdcard) or save backup
+    // in the sdcard root (have to verify it doesn't have similar issue)
+
     // FIXME use document intent https://stackoverflow.com/questions/71728153/i-cant-access-to-a-file-even-with-read-permission
     val requestPermissionLauncher =
         registerForActivityResult(
@@ -102,14 +108,21 @@ class DashboardFragment: Fragment(),
     /**
      * This is required at least on Android 7 and likely below
      * */
-    private fun requestPermissions(operationUnderPermission: () -> Unit) {
-        val selfPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (selfPermission == PackageManager.PERMISSION_GRANTED) {
-            operationUnderPermission()
+    private fun requestPermissionsIfNecessary(operationUnderPermission: () -> Unit) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+            // at least until Android Nougat permissions are required
+            val selfPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            if (selfPermission == PackageManager.PERMISSION_GRANTED) {
+                operationUnderPermission()
+            } else {
+                requestPermissionLauncher.launch(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            }
         } else {
-            requestPermissionLauncher.launch(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
+            operationUnderPermission()
+        }
+
 
 /*                This code would not work: https://stackoverflow.com/a/33080682/3649629
                 use ActivityResultLauncher instead
@@ -120,7 +133,6 @@ class DashboardFragment: Fragment(),
                 PERMISSION_REQUEST_CODE
             )
  */
-        }
     }
 
 /*    @Deprecated("Deprecated in Java")
@@ -214,7 +226,7 @@ class DashboardFragment: Fragment(),
                 return true
             }
             R.id.backupVocabulary -> {
-                requestPermissions { viewModel.backupVocabulary() }
+                requestPermissionsIfNecessary { viewModel.backupVocabulary() }
                 return true
             }
             R.id.restoreVocabulary -> {
