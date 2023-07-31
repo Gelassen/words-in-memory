@@ -10,7 +10,8 @@ data class SubjectToStudyEntity(
     @PrimaryKey(autoGenerate = true) val uid: Int,
     @ColumnInfo(name = "data") val subjectToTranslate: String,
     @ColumnInfo(name = "translation") val translation: String,
-    @ColumnInfo(name = "completed") val isCompleted: Boolean
+    @ColumnInfo(name = "completed") val isCompleted: Boolean,
+    @ColumnInfo(name = "tutorCounter", defaultValue = "0") val tutorCounter: Int
 )
 
 fun SubjectToStudyEntity.toDomain(): SubjectToStudy {
@@ -18,7 +19,8 @@ fun SubjectToStudyEntity.toDomain(): SubjectToStudy {
         uid,
         subjectToTranslate,
         translation,
-        isCompleted
+        isCompleted,
+        tutorCounter
     )
 }
 
@@ -27,6 +29,7 @@ fun SubjectToStudyEntity.fromDomain(subjectToStudy: SubjectToStudy): SubjectToSt
         subjectToStudy.uid,
         subjectToStudy.toTranslate,
         subjectToStudy.translation,
-        subjectToStudy.isCompleted
+        subjectToStudy.isCompleted,
+        subjectToStudy.tutorCounter
     )
 }

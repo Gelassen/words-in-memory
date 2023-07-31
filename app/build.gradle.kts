@@ -18,6 +18,13 @@ android {
         versionName = "1.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] =
+                    "$projectDir/schemas"
+            }
+        }
     }
 
     buildTypes {

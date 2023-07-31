@@ -11,19 +11,22 @@ class SubjectToStudy(): Parcelable {
     lateinit var toTranslate: String
     lateinit var translation: String
     var isCompleted: Boolean = false
+    var tutorCounter: Int = 0
 
     constructor(parcel: Parcel) : this() {
         uid = parcel.readInt()
         toTranslate = parcel.readString()!!
         translation = parcel.readString()!!
         isCompleted = parcel.readByte() != 0.toByte()
+        tutorCounter = parcel.readInt()
     }
 
-    constructor(uid: Int, toTranslate: String, translation: String, isCompleted: Boolean) : this() {
+    constructor(uid: Int, toTranslate: String, translation: String, isCompleted: Boolean, tutorCounter: Int) : this() {
         this.uid = uid
         this.toTranslate = toTranslate
         this.translation = translation
         this.isCompleted = isCompleted
+        this.tutorCounter = tutorCounter
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -31,6 +34,7 @@ class SubjectToStudy(): Parcelable {
         parcel.writeString(toTranslate)
         parcel.writeString(translation)
         parcel.writeByte(if (isCompleted) 1 else 0)
+        parcel.writeInt(tutorCounter)
     }
 
     override fun describeContents(): Int {
@@ -54,6 +58,7 @@ private object SubjectToStudyConst {
     const val TO_TRANSLATE = "TO_TRANSLATE"
     const val TRANSLATION = "TRANSLATION"
     const val IS_COMPLETED = "IS_COMPLETED"
+    const val TUTOR_COUNTER = "TUTOR_COUNTER"
 }
 
 fun SubjectToStudy.convertToJson(): String {
@@ -62,6 +67,7 @@ fun SubjectToStudy.convertToJson(): String {
     result.put(SubjectToStudyConst.TO_TRANSLATE, toTranslate)
     result.put(SubjectToStudyConst.TRANSLATION, translation)
     result.put(SubjectToStudyConst.IS_COMPLETED, isCompleted)
+    result.put(SubjectToStudyConst.TUTOR_COUNTER, tutorCounter)
     return result.toString()
 }
 
@@ -71,7 +77,8 @@ fun SubjectToStudy.fromJson(subj: String): SubjectToStudy {
     val toTranslate = json.optString(SubjectToStudyConst.TO_TRANSLATE)
     val isCompleted = json.optBoolean(SubjectToStudyConst.IS_COMPLETED)
     val translation = json.optString(SubjectToStudyConst.TRANSLATION)
-    return SubjectToStudy(uid, toTranslate, translation, isCompleted)
+    val tutorCounter = json.optInt(SubjectToStudyConst.TUTOR_COUNTER)
+    return SubjectToStudy(uid, toTranslate, translation, isCompleted, tutorCounter)
 }
 
 fun SubjectToStudy.toStorage(): SubjectToStudyEntity {
@@ -79,7 +86,8 @@ fun SubjectToStudy.toStorage(): SubjectToStudyEntity {
         uid,
         toTranslate,
         translation,
-        isCompleted
+        isCompleted,
+        tutorCounter
     )
 }
 
@@ -88,7 +96,8 @@ fun SubjectToStudy.fromStorage(subjectToStudy: SubjectToStudyEntity): SubjectToS
         subjectToStudy.uid,
         subjectToStudy.subjectToTranslate,
         subjectToStudy.translation,
-        subjectToStudy.isCompleted
+        subjectToStudy.isCompleted,
+        subjectToStudy.tutorCounter
     )
 }
 
@@ -97,6 +106,7 @@ fun SubjectToStudy.fromCsvRow(csvRow: CsvRow): SubjectToStudy {
         csvRow.getField(0).toInt(),
         csvRow.getField(1),
         csvRow.getField(2),
-        csvRow.getField(3).toBoolean()
+        csvRow.getField(3).toBoolean(),
+        csvRow.getField(4).toInt()
     )
 }
