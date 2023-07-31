@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.hasKeyWithValueOfType
@@ -49,11 +50,15 @@ class RestoreVocabularyWorker(
             if (!FileUtils().isExternalStorageAvailable()) {
                 val errorMsg = "External storage is not available"
                 result = prepareFailureResult(errorMsg)
-            } else if (!isThereBackupFile()) {
-                val errorMsg = "There is no backup file ${context.getString(R.string.backup_file_csv)}"
-                result = prepareFailureResult(errorMsg)
             } else if (!inputData.hasKeyWithValueOfType<String>(Builder.EXTRA_BACKUP_URI)) {
                 val errorMsg = "There is no uri for backup data. Did you forget to pass it when had prepared Worker?"
+                result = prepareFailureResult(errorMsg)
+            } else if (!DocumentFile.fromSingleUri(
+                    context,
+                    Uri.parse(inputData.getString(Builder.EXTRA_BACKUP_URI))
+                    )!!.exists()
+                ) {
+                val errorMsg = "Uri is valid, but file doesn't exist anymore. Did you or any your apps unexpectedly had removed it?"
                 result = prepareFailureResult(errorMsg)
             } else {
                 val backupUri = Uri.parse(inputData.getString(Builder.EXTRA_BACKUP_URI))
@@ -75,34 +80,12 @@ class RestoreVocabularyWorker(
         return Result.failure(outputData)
     }
 
-    private fun isThereBackupFile(): Boolean {
-        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
-        val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json))
-        return destinationFile.exists()
-    }
-
     private fun getDataFromBackup(backupUri: Uri): MutableList<SubjectToStudy> {
         val result = mutableListOf<SubjectToStudy>()
         Log.d(App.TAG, "Plain read from uri $backupUri")
-        result.addAll(readJsonFile(backupUri))
-        return result
-    }
-
-    private fun readJsonFile(backupUri: Uri): MutableList<SubjectToStudy> {
         val jsonArrayAsString = readTextFromUri(context, backupUri)
-        return getDatasetFromText(jsonArrayAsString)
-    }
-
-    @Deprecated("On Android 13 Storage Access Framework (SAF) is the only option to access " +
-            "file from public folder which is not image or video. It uses uri which I didn't managed " +
-            "to read as file, but only as an input stream. A readJsonFile(backupUri: Uri) should be " +
-            "used in a favor of readJsonFile(destinationFile: File)")
-    private fun readJsonFile(destinationFile: File): MutableList<SubjectToStudy> {
-        val fileReader = FileReader(destinationFile)
-        val jsonArrayAsString = fileReader.readText()
-        fileReader.close()
-        return getDatasetFromText(jsonArrayAsString)
+        result.addAll(getDatasetFromText(jsonArrayAsString))
+        return result
     }
 
     private fun getDatasetFromText(jsonArrayAsString: String): MutableList<SubjectToStudy> {
@@ -119,25 +102,6 @@ class RestoreVocabularyWorker(
         return result
     }
 
-    /**
-     * There is an unresolved issue with write over FastCSV library, that's why it is left unused:
-     * https://github.com/osiegmar/FastCSV/issues/81
-     * */
-    private fun readCsvFile(destinationFile: File): MutableList<SubjectToStudy> {
-        val result = mutableListOf<SubjectToStudy>()
-        val text = destinationFile.readText(java.nio.charset.StandardCharsets.UTF_8)
-        val csvReader: CsvReader = CsvReader.builder().build(text)
-        val iterator = csvReader.iterator()
-        while (iterator.hasNext()) {
-            val row = iterator.next()
-            if (row.fields.contains("toTranslate")) {
-                continue // skip the first as a header
-            }
-            result.add(SubjectToStudy().fromCsvRow(row))
-        }
-        return result
-    }
-
     @Throws(IOException::class)
     fun readTextFromUri(context: Context, uri: Uri?): String {
         val stringBuilder = StringBuilder()
@@ -150,6 +114,7 @@ class RestoreVocabularyWorker(
                     stringBuilder.append(line)
                 }
             }
+            inputStream!!.close()
         }
         return stringBuilder.toString()
     }

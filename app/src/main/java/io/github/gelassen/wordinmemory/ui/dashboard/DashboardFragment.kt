@@ -158,13 +158,9 @@ class DashboardFragment: Fragment(),
             }
             R.id.backupVocabulary -> {
                 requestCreateDocStorageAccessFramework()
-//                requestPermissionsIfNecessary { viewModel.backupVocabulary() }
                 return true
             }
             R.id.restoreVocabulary -> {
-//                requestPermission()
-//                viewModel.restoreVocabulary()
-//                requestPermissions { viewModel.restoreVocabulary() }
                 requestRestorePermissions()
                 return true
             }
