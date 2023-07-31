@@ -62,8 +62,6 @@ class BackupVocabularyWorker(
         var result: Result = Result.success()
         try {
             val destinationUri = Uri.parse(inputData.getString(RestoreVocabularyWorker.Builder.EXTRA_BACKUP_URI))
-            // TODO you can not delete file created by another app (can not use after reinstall)
-            // TODO you might have to delete existing file to avoid dirty data in file
             writeAsJsonArray(dataset, destinationUri)
         } catch (ex: Exception) {
             val errorMsg = "Failed to backup database into external storage file"
