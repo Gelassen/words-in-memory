@@ -33,4 +33,8 @@ class StorageRepository(val subjectsDao: SubjectToStudyDao) {
         return subjectsDao.getNotCompletedOnly()
             .map { it -> it.map { it.toDomain() } }
     }
+
+    suspend fun getDailyPractice(): List<SubjectToStudy> {
+        return subjectsDao.getFirstTenNotCompletedAndLessTutored().map { it.toDomain() }
+    }
 }

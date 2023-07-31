@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 
-@Entity(tableName = SubjectToStudyDao.Const.tableName)
+@Entity(tableName = SubjectToStudyDao.Const.TABLE_NAME)
 data class SubjectToStudyEntity(
     @PrimaryKey(autoGenerate = true) val uid: Int,
     @ColumnInfo(name = "data") val subjectToTranslate: String,
