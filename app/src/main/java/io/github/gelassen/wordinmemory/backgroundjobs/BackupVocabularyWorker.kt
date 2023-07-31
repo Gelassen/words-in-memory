@@ -54,11 +54,14 @@ class BackupVocabularyWorker(
     private fun writeDatasetToExternalFile(dataset: List<SubjectToStudy>): Result {
         var result: Result = Result.success()
         try {
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val destinationPath = File(downloadsDir, context.getString(R.string.backup_folder))
             val destinationFile = File(destinationPath, context.getString(R.string.backup_file_json))
             if (destinationFile.exists()) {
-                destinationFile.delete()
+                // TODO you can not delete file created by another app (can not use after reinstall)
+                // think about different way to achieve it - likely it is SAF
+                val isDeleted = destinationFile.delete()
+                Log.d(App.TAG, "Is file deleted? <$isDeleted> $destinationFile")
             }
             destinationPath.mkdirs()
             destinationFile.setReadable(true)

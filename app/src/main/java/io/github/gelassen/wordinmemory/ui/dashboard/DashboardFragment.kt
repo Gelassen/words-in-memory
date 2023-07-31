@@ -109,7 +109,7 @@ class DashboardFragment: Fragment(),
      * This is required at least on Android 7 and likely below
      * */
     private fun requestPermissionsIfNecessary(operationUnderPermission: () -> Unit) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             // at least until Android Nougat permissions are required
             val selfPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
             if (selfPermission == PackageManager.PERMISSION_GRANTED) {
