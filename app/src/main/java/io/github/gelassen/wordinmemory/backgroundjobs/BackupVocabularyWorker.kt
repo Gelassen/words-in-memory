@@ -5,11 +5,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import androidx.work.hasKeyWithValueOfType
 import androidx.work.workDataOf
-import de.siegmar.fastcsv.writer.CsvWriter
-import de.siegmar.fastcsv.writer.LineDelimiter
-import de.siegmar.fastcsv.writer.QuoteStrategy
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker.Consts.KEY_ERROR_MSG
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
@@ -21,15 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
 import java.io.IOException
-import java.io.InputStreamReader
 import java.io.OutputStreamWriter
-import java.io.Writer
-import java.util.Date
 import java.util.Objects
 
 
