@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.*
 import android.Manifest
 import android.content.pm.PackageManager
+import android.provider.DocumentsContract
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -55,39 +56,11 @@ class DashboardFragment: Fragment(),
     // on this platforms versions (use old-school way to write\read from sdcard) or save backup
     // in the sdcard root (have to verify it doesn't have similar issue)
 
-    // FIXME use document intent https://stackoverflow.com/questions/71728153/i-cant-access-to-a-file-even-with-read-permission
-    val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission is granted. Continue the action or workflow in your
-                // app.
-                /*Log.d(App.TAG, "READ_EXTERNAL_STORAGE Permission has been granted for restoreVocabulary()")*/
-                /*viewModel.restoreVocabulary()*/
-                Log.d(App.TAG, "WRITE_EXTERNAL_STORAGE Permission has been granted for backupVocabulary()")
-                viewModel.backupVocabulary()
-            } else {
-                // Explain to the user that the feature is unavailable because the
-                // feature requires a permission that the user has denied. At the
-                // same time, respect the user's decision. Don't link to system
-                // settings in an effort to convince the user to change their
-                // decision.
-//                Log.d(App.TAG, "READ_EXTERNAL_STORAGE Permission has been declined for restoreVocabulary()")
-                Log.d(App.TAG, "WRITE_EXTERNAL_STORAGE Permission has been declined for backupVocabulary()")
-                Snackbar.make(
-                    binding.noContentPlaceholder,
-                    "You have to give WordsInMemory app this permission to backup your vocabulary",
-                    Snackbar.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-    var backupRequestLauncher =
+    private var restoreRequestLauncher =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result: ActivityResult ->
-            Log.d(App.TAG, "backupRequestLauncher callback is triggered ${result}")
+            Log.d(App.TAG, "restoreRequestLauncher callback is triggered ${result}")
             when(result.resultCode) {
                 RESULT_OK -> {
                     Log.d(App.TAG, "Receive a result on the request for a document ${result.data!!.data!!}")
@@ -98,77 +71,35 @@ class DashboardFragment: Fragment(),
             }
         }
 
-    private fun requestBackup() {
+    private var createDocBackupRequestLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        Log.d(App.TAG, "createDocBackupRequestLauncher callback is triggered $result")
+        when(result.resultCode) {
+            RESULT_OK -> {
+                Log.d(App.TAG, "Receive result on CREATE_DOCUMENT request ${result.data!!.data!!}")
+                val uri = result.data!!.data!!
+                viewModel.backupVocabulary(uri)
+            }
+            else -> { Log.d(App.TAG, "Haven't received a document uri on the CREATE_DOCUMENT request ${result.resultCode}") }
+        }
+    }
+
+    private fun requestCreateDocStorageAccessFramework() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, getString(R.string.backup_file_json))
+        }
+        createDocBackupRequestLauncher.launch(intent)
+    }
+
+    private fun requestRestorePermissions() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "application/json"
-        backupRequestLauncher.launch(intent)
+        restoreRequestLauncher.launch(intent)
     }
-
-    /**
-     * This is required at least on Android 7 and likely below
-     * */
-    private fun requestPermissionsIfNecessary(operationUnderPermission: () -> Unit) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-            // at least until Android Nougat permissions are required
-            val selfPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (selfPermission == PackageManager.PERMISSION_GRANTED) {
-                operationUnderPermission()
-            } else {
-                requestPermissionLauncher.launch(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-            }
-        } else {
-            operationUnderPermission()
-        }
-
-
-/*                This code would not work: https://stackoverflow.com/a/33080682/3649629
-                use ActivityResultLauncher instead
-
-                ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                PERMISSION_REQUEST_CODE
-            )
- */
-    }
-
-/*    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE  -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    // Permission is granted. Continue the action or workflow
-                    // in your app.
-                    viewModel.restoreVocabulary()
-                } else {
-                    // Explain to the user that the feature is unavailable because
-                    // the feature requires a permission that the user has denied.
-                    // At the same time, respect the user's decision. Don't link to
-                    // system settings in an effort to convince the user to change
-                    // their decision.
-                    Snackbar.make(
-                        binding.noContentPlaceholder,
-                        "You have to give WordsInMemory app this permission to restore your vocabulary",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                }
-                return
-            }
-
-            // Add other 'when' lines to check for other
-            // permissions this app might request.
-            else -> {
-                // Ignore all other requests.
-                Log.d(App.TAG, "Got unsupported permission request code $requestCode")
-            }
-        }
-    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -226,14 +157,15 @@ class DashboardFragment: Fragment(),
                 return true
             }
             R.id.backupVocabulary -> {
-                requestPermissionsIfNecessary { viewModel.backupVocabulary() }
+                requestCreateDocStorageAccessFramework()
+//                requestPermissionsIfNecessary { viewModel.backupVocabulary() }
                 return true
             }
             R.id.restoreVocabulary -> {
 //                requestPermission()
 //                viewModel.restoreVocabulary()
 //                requestPermissions { viewModel.restoreVocabulary() }
-                requestBackup()
+                requestRestorePermissions()
                 return true
             }
             R.id.privacyPolicy -> {

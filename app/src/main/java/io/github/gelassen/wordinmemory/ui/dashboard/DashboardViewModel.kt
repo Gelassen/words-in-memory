@@ -139,11 +139,11 @@ class DashboardViewModel
             state.copy(errors = state.errors.filter { it -> it != error })
         }
     }
-    fun backupVocabulary() {
+    fun backupVocabulary(uriToBackupDataFile: Uri) {
         viewModelScope.launch {
             val workManager = WorkManager.getInstance(app)
             val workRequest = workManager.getWorkRequest<BackupVocabularyWorker>(
-                BackupVocabularyWorker.Builder.build()
+                BackupVocabularyWorker.Builder.build(uriToBackupDataFile)
             )
             workManager.enqueue(workRequest)
             workManager
