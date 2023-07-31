@@ -1,13 +1,18 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import io.github.gelassen.wordinmemory.App.Companion.TAG
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.ViewItemDasboardItemBinding
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+
 
 class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<DashboardAdapter.ViewHolder>() {
 
@@ -20,6 +25,11 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
 
     private val data: MutableList<SubjectToStudy> = mutableListOf()
 
+    private var lastPositionForAnimation = 0
+
+    private var DURATION: Long = 500
+    private var onAttach = true
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ViewItemDasboardItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding, false)
@@ -28,6 +38,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val selectedSubject = data.get(position)
         holder.binding.toTranslate.text = selectedSubject.toTranslate
+        setAnimation(holder.itemView, position)
         prepareOnCompleteClickCase(holder, selectedSubject)
         prepareToTranslateClickCase(holder, selectedSubject)
         prepareResponseOnSelectionCase(holder, selectedSubject)
@@ -36,6 +47,22 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
 
     override fun getItemCount(): Int {
         return data.size
+    }
+
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        holder.itemView.clearAnimation()
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                Log.d(TAG, "onScrollStateChanged: Called $newState")
+                onAttach = false
+                super.onScrollStateChanged(recyclerView, newState)
+            }
+        })
+        super.onAttachedToRecyclerView(recyclerView)
     }
 
     fun prepareOnCompleteClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
@@ -98,6 +125,30 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         data.clear()
         data.addAll(newData)
         diffResult.dispatchUpdatesTo(this)
+    }
+
+    private fun setAnimation(viewToAnimate: View, pos: Int) {
+/*        // If the bound view wasn't previously displayed on screen, it's animated
+        if (position > lastPositionForAnimation) {
+            val animation: Animation =
+                AnimationUtils.loadAnimation(viewToAnimate.context, android.R.anim.fade_in)
+            viewToAnimate.startAnimation(animation)
+            lastPositionForAnimation = position
+        }*/
+        var position = pos
+        if (!onAttach) {
+            position = -1
+        }
+        val isNotFirstItem = position === -1
+        position++
+        viewToAnimate.setAlpha(0f)
+        val animatorSet = AnimatorSet()
+        val animator = ObjectAnimator.ofFloat(viewToAnimate, "alpha", 0f, 0.5f, 1.0f)
+        ObjectAnimator.ofFloat(viewToAnimate, "alpha", 0f).start()
+        animator.setStartDelay(if (isNotFirstItem) DURATION / 2 else position * DURATION / 3)
+        animator.duration = 500
+        animatorSet.play(animator)
+        animator.start()
     }
 
     inner class ViewHolder(val binding: ViewItemDasboardItemBinding, var translationIsOn: Boolean) : RecyclerView.ViewHolder(binding.root)
