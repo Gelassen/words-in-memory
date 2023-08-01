@@ -5,10 +5,8 @@ import android.net.Uri
 import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.work.Operation.State.SUCCESS
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import io.github.gelassen.wordinmemory.App
@@ -24,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class Model(
@@ -59,13 +58,16 @@ class DashboardViewModel
     private val validator = Validator()
 
     fun addItem() {
+        Log.d(App.TAG, "Add item has started")
         viewModelScope.launch {
+            Log.d(App.TAG, "Add item coroutine has started")
             if (validator.isAllowedWordOrSentence(wordToTranslate.get()!!, translation.get()!!)) {
                 val subject = SubjectToStudy(
-                    uid = 0,
+                    0,
                     wordToTranslate.get()!!,
-                    translation.get()!!,
-                    false
+                    translation = translation.get()!!,
+                    isCompleted = false,
+                    tutorCounter = 0
                 )
                 storageRepository.saveSubject(subject)
             } else {
@@ -76,15 +78,21 @@ class DashboardViewModel
         }
     }
 
+    override fun onCleared() {
+        Log.d(App.TAG, "${this.javaClass.simpleName} onCleared() call")
+        super.onCleared()
+    }
+
     fun updateItem(subject: SubjectToStudy) {
         viewModelScope.launch {
-            val subject = SubjectToStudy(
+            val subj = SubjectToStudy(
                 uid = subject.uid,
                 wordToTranslate.get()!!,
                 translation.get()!!,
-                subject.isCompleted
+                subject.isCompleted,
+                subject.tutorCounter
             )
-            storageRepository.saveSubject(subject)
+            storageRepository.saveSubject(subj)
             wordToTranslate.set("")
             translation.set("")
         }
@@ -196,6 +204,22 @@ class DashboardViewModel
                     }
                 }
 
+        }
+    }
+
+    suspend fun showDailyPractice() {
+        withContext(Dispatchers.IO) {
+            val dailyPractice = storageRepository.getDailyPractice()
+            state.update { state ->
+                state.copy(isLoading = false, data = dailyPractice)
+            }
+        }
+    }
+
+    suspend fun completeDailyPractice(dataset: MutableList<SubjectToStudy>) {
+        withContext(Dispatchers.IO) {
+            dataset.forEach { it.tutorCounter++ }
+            storageRepository.saveSubject(*dataset.map { it }.toTypedArray())
         }
     }
 }

@@ -6,6 +6,7 @@
     <string name="to_translate_field">Enter a foreign word or sentence.</string>
     <string name="translation_field">Enter the translation.</string>
     <string name="no_content_placeholder">You have not added yet any word to study. Please tap on the + button.</string>
+    <string name="complete_daily_practice">Complete</string>
 
     <!--  menu  -->
     <string name="menu_show_all">Show all</string>

@@ -2,19 +2,15 @@ package io.github.gelassen.wordinmemory.backgroundjobs
 
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.hasKeyWithValueOfType
 import androidx.work.workDataOf
-import de.siegmar.fastcsv.reader.CsvReader
 import io.github.gelassen.wordinmemory.App
-import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker.Consts.KEY_ERROR_MSG
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
-import io.github.gelassen.wordinmemory.model.fromCsvRow
 import io.github.gelassen.wordinmemory.model.fromJson
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.utils.FileUtils
@@ -22,8 +18,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONArray
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.Objects

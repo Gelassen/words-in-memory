@@ -65,6 +65,10 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         super.onAttachedToRecyclerView(recyclerView)
     }
 
+    fun getDataset(): MutableList<SubjectToStudy> {
+        return data
+    }
+
     fun prepareOnCompleteClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
         holder.binding.completeIcon.setOnClickListener {
             if (selectedSubject.isCompleted) {

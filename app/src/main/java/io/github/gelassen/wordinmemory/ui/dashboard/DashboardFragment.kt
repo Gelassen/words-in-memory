@@ -30,7 +30,7 @@ import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.utils.ConfigParams
 import javax.inject.Inject
 
-class DashboardFragment: Fragment(),
+open class DashboardFragment: Fragment(),
     DashboardAdapter.ClickListener {
 
     companion object {
@@ -48,7 +48,7 @@ class DashboardFragment: Fragment(),
     lateinit var viewModelFactory: ViewModelFactory
     lateinit var viewModel: DashboardViewModel
 
-    private lateinit var binding: FragmentDashboardBinding
+    protected lateinit var binding: FragmentDashboardBinding
 
     // FIXME on some old versions of Android (at least on Android 7 and below API 30) files in
     // Downloads folder are not shown open via SAF and using default Files catalog explorer
@@ -85,22 +85,6 @@ class DashboardFragment: Fragment(),
         }
     }
 
-    private fun requestCreateDocStorageAccessFramework() {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/json"
-            putExtra(Intent.EXTRA_TITLE, getString(R.string.backup_file_json))
-        }
-        createDocBackupRequestLauncher.launch(intent)
-    }
-
-    private fun requestRestorePermissions() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "application/json"
-        restoreRequestLauncher.launch(intent)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true);
@@ -113,8 +97,9 @@ class DashboardFragment: Fragment(),
     ): View? {
         (requireActivity().application as AppApplication).getComponent().inject(this)
 
-        viewModel = ViewModelProvider(this, viewModelFactory).get(DashboardViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory).get(DashboardViewModel::class.java)
         binding = FragmentDashboardBinding.inflate(inflater, container, false)
+        binding.isTutoringMode = false
         return binding.root
     }
 
@@ -203,14 +188,20 @@ class DashboardFragment: Fragment(),
             resources.getColor(R.color.colorActionBar)
     }
 
-    private fun runOnStart() {
+    protected open fun runOnStart() {
         lifecycleScope.launchWhenStarted {
             viewModel.showNonCompletedOnly()
         }
+        listenOnModelUpdates()
+    }
+
+    protected fun listenOnModelUpdates(codeOnDataCollect: ((data: List<SubjectToStudy>) -> Unit)? = null) {
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { it ->
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data.asReversed())
+                if (it.data.isNotEmpty()) { binding.dashboardList.scrollToPosition(0) }
                 binding.noContentPlaceholder.visibility = if (it.data.isEmpty()) { View.VISIBLE } else { View.GONE }
+                codeOnDataCollect?.invoke(it.data)
 
                 if (it.errors.isNotEmpty()) {
                     var error = it.errors.first()
@@ -229,6 +220,21 @@ class DashboardFragment: Fragment(),
                 }
             }
         }
+    }
 
+    private fun requestCreateDocStorageAccessFramework() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, getString(R.string.backup_file_json))
+        }
+        createDocBackupRequestLauncher.launch(intent)
+    }
+
+    private fun requestRestorePermissions() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "application/json"
+        restoreRequestLauncher.launch(intent)
     }
 }

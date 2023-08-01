@@ -6,20 +6,12 @@ import de.siegmar.fastcsv.reader.CsvRow
 import io.github.gelassen.wordinmemory.storage.SubjectToStudyEntity
 import org.json.JSONObject
 
-class SubjectToStudy(): Parcelable {
+class SubjectToStudy() : Parcelable {
     var uid: Int = 0
     lateinit var toTranslate: String
     lateinit var translation: String
     var isCompleted: Boolean = false
     var tutorCounter: Int = 0
-
-    constructor(parcel: Parcel) : this() {
-        uid = parcel.readInt()
-        toTranslate = parcel.readString()!!
-        translation = parcel.readString()!!
-        isCompleted = parcel.readByte() != 0.toByte()
-        tutorCounter = parcel.readInt()
-    }
 
     constructor(uid: Int, toTranslate: String, translation: String, isCompleted: Boolean, tutorCounter: Int) : this() {
         this.uid = uid
@@ -27,6 +19,13 @@ class SubjectToStudy(): Parcelable {
         this.translation = translation
         this.isCompleted = isCompleted
         this.tutorCounter = tutorCounter
+    }
+    constructor(parcel: Parcel) : this() {
+        uid = parcel.readInt()
+        toTranslate = parcel.readString()!!
+        translation = parcel.readString()!!
+        isCompleted = parcel.readByte() != 0.toByte()
+        tutorCounter = parcel.readInt()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
