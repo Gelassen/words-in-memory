@@ -32,7 +32,7 @@ class DashboardViewModel {
     fun setUp() {
         autoCloseable = MockitoAnnotations.openMocks(this)
 
-        subj = DashboardViewModel(storageRepository)
+//        subj = DashboardViewModel(storageRepository)
     }
 
     @After

@@ -9,16 +9,26 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
+import io.github.gelassen.wordinmemory.providers.DashboardProvider
+import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
 
 class TutoringFragment : DashboardFragment() {
 
     companion object {
+
+        const val MAX_COUNTER = 2
+
         fun newInstance(): Fragment {
             return TutoringFragment()
         }
     }
+
+    private val quickStorage: AppQuickStorage = AppQuickStorage()
+    private val provider: DashboardProvider = DashboardProvider()
+    private var counter = 0
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,7 +46,7 @@ class TutoringFragment : DashboardFragment() {
                 Log.d(App.TAG, "Click on complete daily practice")
                 val dataset = (binding.dashboardList.adapter as DashboardAdapter).getDataset()
                 lifecycleScope.launchWhenCreated {
-                    viewModel.completeDailyPractice(dataset)
+                    viewModel.completeDailyPractice(requireActivity(), dataset)
                 }
                 showMainScreen()
             }
@@ -44,14 +54,23 @@ class TutoringFragment : DashboardFragment() {
     }
 
     override fun runOnStart() {
-        lifecycleScope.launchWhenStarted {
-            viewModel.showDailyPractice()
-        }
-        listenOnModelUpdates() { dataset ->
-            Log.d(App.TAG, "Lambda code block has been executed")
-//            if (dataset.isEmpty()) {
-//                showMainScreen()
-//            }
+
+        if (provider.isTimeToShowDailyTraining(
+                lastShownTime = quickStorage.getLastTrainedTime(requireActivity()),
+                currentTime = System.currentTimeMillis())) {
+            lifecycleScope.launchWhenStarted {
+                viewModel.showDailyPractice()
+            }
+
+            listenOnModelUpdates() { dataset ->
+                Log.d(App.TAG, "Lambda code block has been executed")
+                // we have to add counter, because at first we always receive model's default state
+                if (++counter >= MAX_COUNTER && dataset.isEmpty()) {
+                    showMainScreen()
+                }
+            }
+        } else {
+            showMainScreen()
         }
     }
 

@@ -1,9 +1,11 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
+import android.app.Activity
 import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.databinding.ObservableField
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
@@ -17,6 +19,7 @@ import io.github.gelassen.wordinmemory.backgroundjobs.RestoreVocabularyWorker
 import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
+import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.utils.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -216,8 +219,12 @@ class DashboardViewModel
         }
     }
 
-    suspend fun completeDailyPractice(dataset: MutableList<SubjectToStudy>) {
+    suspend fun completeDailyPractice(
+        activity: Activity,
+        dataset: MutableList<SubjectToStudy>
+    ) {
         withContext(Dispatchers.IO) {
+            AppQuickStorage().saveLastTrainedTime(activity, System.currentTimeMillis())
             dataset.forEach { it.tutorCounter++ }
             storageRepository.saveSubject(*dataset.map { it }.toTypedArray())
         }

@@ -63,7 +63,8 @@ dependencies {
     implementation("androidx.room:room-ktx:2.5.2")
     implementation("androidx.work:work-runtime:2.8.1")
     implementation("androidx.work:work-runtime-ktx:2.8.1")
-    implementation("androidx.databinding:databinding-runtime:8.0.2")
+    implementation("androidx.databinding:databinding-runtime:8.1.0")
+    implementation("androidx.preference:preference:1.2.1")
 
     implementation("com.google.android.material:material:1.9.0")
     implementation("de.siegmar:fastcsv:2.2.2")
