@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "io.github.gelassen.wordsinmemory",
+  "applicationId": "io.github.gelassen.wordsinmemory.debug",
   "variantName": "release",
   "elements": [
     {
