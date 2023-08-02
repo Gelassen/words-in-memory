@@ -117,6 +117,7 @@ class DashboardViewModel
                 .cancellable()
                 .flowOn(Dispatchers.IO)
                 .collect { it ->
+                    Log.d(App.TAG, "[showAll] show all result (count: ${it.size}) $it")
                     state.update { state ->
                         state.copy(data = it, status = StateFlag.DATA)
                     }
@@ -132,6 +133,7 @@ class DashboardViewModel
                 .cancellable()
                 .flowOn(Dispatchers.IO)
                 .collect { it ->
+                    Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
                     state.update { state ->
                         state.copy(data = it, status = StateFlag.DATA)
                     }

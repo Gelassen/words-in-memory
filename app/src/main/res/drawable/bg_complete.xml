@@ -3,6 +3,6 @@
     android:id="@+id/bgCompleteIcon"
     android:shape="oval">
 
-    <solid android:color="#0023FF" />
+    <solid android:color="#880023FF" />
 
 </shape>

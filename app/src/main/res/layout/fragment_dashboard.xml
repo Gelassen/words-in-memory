@@ -66,7 +66,6 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!--  TODO complete me: a button for tutoring screen  -->
         <FrameLayout
             android:id="@+id/completeDailyPractice"
             android:layout_width="match_parent"

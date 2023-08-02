@@ -3,6 +3,8 @@ package io.github.gelassen.wordinmemory.ui.tutoring
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -19,6 +21,8 @@ class TutoringFragment : DashboardFragment() {
     companion object {
 
         const val MAX_COUNTER = 2
+
+        const val REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING = 10
 
         fun newInstance(): Fragment {
             return TutoringFragment()
@@ -53,6 +57,11 @@ class TutoringFragment : DashboardFragment() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        /* super.onCreateOptionsMenu(menu, inflater) */
+        /* disable menu for this screen */
+    }
+
     override fun runOnStart() {
 
         if (provider.isTimeToShowDailyTraining(
@@ -65,7 +74,8 @@ class TutoringFragment : DashboardFragment() {
             listenOnModelUpdates() { dataset ->
                 Log.d(App.TAG, "Lambda code block has been executed")
                 // we have to add counter, because at first we always receive model's default state
-                if (++counter >= MAX_COUNTER && dataset.isEmpty()) {
+                if ((++counter >= MAX_COUNTER && dataset.isEmpty())
+                    || (dataset.isNotEmpty() && dataset.size < MAX_COUNTER)) {
                     showMainScreen()
                 }
             }

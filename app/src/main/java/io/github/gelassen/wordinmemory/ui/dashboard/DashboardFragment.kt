@@ -50,12 +50,6 @@ open class DashboardFragment: Fragment(),
 
     protected lateinit var binding: FragmentDashboardBinding
 
-    // FIXME on some old versions of Android (at least on Android 7 and below API 30) files in
-    // Downloads folder are not shown open via SAF and using default Files catalog explorer
-    // (using non-default one works without any issues). Possible workaround don't use SAF
-    // on this platforms versions (use old-school way to write\read from sdcard) or save backup
-    // in the sdcard root (have to verify it doesn't have similar issue)
-
     private var restoreRequestLauncher =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -199,7 +193,7 @@ open class DashboardFragment: Fragment(),
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { it ->
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data.asReversed())
-                if (it.data.isNotEmpty()) { binding.dashboardList.scrollToPosition(0) }
+//                if (it.data.isNotEmpty()) { binding.dashboardList.scrollToPosition(0) }
                 binding.noContentPlaceholder.visibility = if (it.data.isEmpty()) { View.VISIBLE } else { View.GONE }
                 codeOnDataCollect?.invoke(it.data)
 
