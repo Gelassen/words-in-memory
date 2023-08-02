@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
+import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.providers.DashboardProvider
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
@@ -72,10 +73,8 @@ class TutoringFragment : DashboardFragment() {
             }
 
             listenOnModelUpdates() { dataset ->
-                Log.d(App.TAG, "Lambda code block has been executed")
-                // we have to add counter, because at first we always receive model's default state
-                if ((++counter >= MAX_COUNTER && dataset.isEmpty())
-                    || (dataset.isNotEmpty() && dataset.size < MAX_COUNTER)) {
+                if (shallSkipTutoringScreen(dataset)
+                    || areNotEnoughWordsForPractice(dataset)) {
                     showMainScreen()
                 }
             }
@@ -89,6 +88,14 @@ class TutoringFragment : DashboardFragment() {
             .beginTransaction()
             .replace(R.id.container, DashboardFragment.newInstance())
             .commit()
+    }
+
+    private fun shallSkipTutoringScreen(dataset: List<SubjectToStudy>): Boolean {
+        // we have to add counter, because at first we always receive model's default state
+        return ++counter >= MAX_COUNTER && dataset.isEmpty()
+    }
+    private fun areNotEnoughWordsForPractice(dataset: List<SubjectToStudy>): Boolean {
+        return dataset.isNotEmpty() && dataset.size < REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING
     }
 
 }

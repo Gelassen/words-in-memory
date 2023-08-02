@@ -213,11 +213,28 @@ class DashboardViewModel
     }
 
     suspend fun showDailyPractice() {
-        withContext(Dispatchers.IO) {
+        /* when we show only subset based on sql query, observer doesn't respond on changes in database */
+/*        withContext(Dispatchers.IO) {
             val dailyPractice = storageRepository.getDailyPractice()
             state.update { state ->
                 state.copy(isLoading = false, data = dailyPractice)
             }
+        }*/
+        val itemsForPracticeAmount = 10
+        filterRequestJob?.cancel()
+        filterRequestJob = viewModelScope.launch {
+            storageRepository
+                .getNonCompleteSubjectsOnly()
+                .cancellable()
+                .map { it -> it.sortedBy { item -> item.tutorCounter } }
+                /*.take(itemsForPracticeAmount)*/
+                .flowOn(Dispatchers.IO)
+                .collect { it ->
+                    Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
+                    state.update { state ->
+                        state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.DATA)
+                    }
+                }
         }
     }
 
