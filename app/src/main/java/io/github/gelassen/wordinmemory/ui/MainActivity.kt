@@ -16,12 +16,9 @@ class MainActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // FIXME resolve this WIP commit caused by unclear sentry behaviour
-        // https://github.com/getsentry/sentry-java/issues/2841
-
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.container, /*DashboardFragment.newInstance()*/TutoringFragment.newInstance())
+            .add(R.id.container, TutoringFragment.newInstance())
             .commit()
 
         Log.d(App.TAG, "Is screen big enough? ${Qualifier().isScreenBigEnough(this)}")
