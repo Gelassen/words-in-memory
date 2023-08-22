@@ -17,7 +17,7 @@ import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
 
-class TutoringFragment : DashboardFragment() {
+class TutoringPartTwoFragment : DashboardFragment() {
 
     companion object {
 
@@ -26,12 +26,10 @@ class TutoringFragment : DashboardFragment() {
         const val REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING = 10
 
         fun newInstance(): Fragment {
-            return TutoringFragment()
+            return TutoringPartTwoFragment()
         }
     }
 
-    private val quickStorage: AppQuickStorage = AppQuickStorage()
-    private val provider: DashboardProvider = DashboardProvider()
     private var counter = 0
 
     override fun onCreateView(
@@ -46,14 +44,15 @@ class TutoringFragment : DashboardFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 of 2")
         binding.completeDailyPractice.apply {
             setOnClickListener {
                 Log.d(App.TAG, "Click on complete daily practice")
                 val dataset = (binding.dashboardList.adapter as DashboardAdapter).getDataset()
                 lifecycleScope.launchWhenCreated {
-                    viewModel.completeDailyPractice(requireActivity(), dataset)
+                    viewModel.completePartTwoDailyPractice(requireActivity(), dataset)
                 }
-                showMainScreen()
+                finishWork()
             }
         }
     }
@@ -65,22 +64,21 @@ class TutoringFragment : DashboardFragment() {
 
     override fun runOnStart() {
 
-        if (provider.isTimeToShowDailyTraining(
-                lastShownTime = quickStorage.getLastTrainedTime(requireActivity()),
-                currentTime = System.currentTimeMillis())) {
-            lifecycleScope.launchWhenStarted {
-                viewModel.showDailyPractice()
-            }
-
-            listenOnModelUpdates() { dataset ->
-                if (shallSkipTutoringScreen(dataset)
-                    || areNotEnoughWordsForPractice(dataset)) {
-                    showMainScreen()
-                }
-            }
-        } else {
-            showMainScreen()
+        lifecycleScope.launchWhenStarted {
+            viewModel.showPartTwoDailyPractice()
         }
+
+        listenOnModelUpdates() { dataset ->
+            if (shallSkipTutoringScreen(dataset)
+                || areNotEnoughWordsForPractice(dataset)) {
+                finishWork()
+            }
+        }
+    }
+
+    private fun finishWork() {
+        viewModel.clearState()
+        showMainScreen()
     }
 
     private fun showMainScreen() {

@@ -5,7 +5,6 @@ import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.databinding.ObservableField
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
@@ -238,6 +237,33 @@ class DashboardViewModel
         }
     }
 
+    suspend fun showPartTwoDailyPractice() {
+        /* when we show only subset based on sql query, observer doesn't respond on changes in database */
+        /*        withContext(Dispatchers.IO) {
+                    val dailyPractice = storageRepository.getDailyPractice()
+                    state.update { state ->
+                        state.copy(isLoading = false, data = dailyPractice)
+                    }
+                }*/
+        val itemsForPracticeAmount = 10
+        filterRequestJob?.cancel()
+        filterRequestJob = viewModelScope.launch {
+            storageRepository
+                .getCompleteSubjectsOnly()
+                .cancellable()
+                .map { it -> it.sortedBy { item -> item.tutorCounter } }
+                .map { it -> revertBackTranslationAndSubjectToTranslate(it) }
+                /*.take(itemsForPracticeAmount)*/
+                .flowOn(Dispatchers.IO)
+                .collect { it ->
+                    Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
+                    state.update { state ->
+                        state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.DATA)
+                    }
+                }
+        }
+    }
+
     suspend fun completeDailyPractice(
         activity: Activity,
         dataset: MutableList<SubjectToStudy>
@@ -246,6 +272,29 @@ class DashboardViewModel
             AppQuickStorage().saveLastTrainedTime(activity, System.currentTimeMillis())
             dataset.forEach { it.tutorCounter++ }
             storageRepository.saveSubject(*dataset.map { it }.toTypedArray())
+        }
+    }
+
+    suspend fun completePartTwoDailyPractice(
+        activity: Activity,
+        dataset: MutableList<SubjectToStudy>
+    ) {
+        val list = revertBackTranslationAndSubjectToTranslate(dataset.toList())
+        completeDailyPractice(activity, list.toMutableList())
+    }
+
+    private fun revertBackTranslationAndSubjectToTranslate(dataset: List<SubjectToStudy>): List<SubjectToStudy> {
+        return dataset.map { it ->
+            val tmp = it.translation
+            it.translation = it.toTranslate
+            it.toTranslate = tmp
+            it
+        }
+    }
+
+    fun clearState() {
+        state.update { state ->
+            state.copy()
         }
     }
 }
