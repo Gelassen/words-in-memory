@@ -227,6 +227,7 @@ class DashboardViewModel
                 state.copy(isLoading = false, data = dailyPractice)
             }
         }*/
+        Log.d(App.TAG, "[start] showDailyPractice")
         val itemsForPracticeAmount = 10
         filterRequestJob?.cancel()
         filterRequestJob = viewModelScope.launch {
@@ -253,6 +254,7 @@ class DashboardViewModel
                         state.copy(isLoading = false, data = dailyPractice)
                     }
                 }*/
+        Log.d(App.TAG, "[start] showPartTwoDailyPractice")
         val itemsForPracticeAmount = 10
         filterRequestJob?.cancel()
         filterRequestJob = viewModelScope.launch {

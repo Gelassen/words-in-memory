@@ -9,12 +9,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.providers.DashboardProvider
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 
 class TutoringPartOneFragment : BaseTutoringFragment() {
 
@@ -31,6 +34,11 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 1 / 2")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(App.TAG, "onDestroy() from ${this.javaClass.simpleName}")
     }
 
     override fun onCompleteDailyPractice(dataset: MutableList<SubjectToStudy>) {
@@ -61,6 +69,11 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
     }
 
     private fun completePartOneTutoring() {
+        /**
+         * without explicit cancellation from coroutine, it is triggered quicker rather than onDestroy()
+         * call (onDestroy() would cancel coroutines automatically) which leads to infinite invocation loop
+         * */
+        viewModel.viewModelScope.coroutineContext.cancelChildren()
         viewModel.clearState()
         showNextTutoringPart()
     }

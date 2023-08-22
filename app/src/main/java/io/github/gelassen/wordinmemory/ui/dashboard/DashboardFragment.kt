@@ -91,6 +91,11 @@ open class DashboardFragment: Fragment(),
     ): View? {
         (requireActivity().application as AppApplication).getComponent().inject(this)
 
+        /**
+         * It is important to keep the same ViewModelStoreOwner across different fragments
+         * which uses the same ViewModel
+         * @link https://stackoverflow.com/questions/76811413/how-to-share-viewmodel-and-its-scope-across-fragments
+         * */
         viewModel = ViewModelProvider(requireActivity(), viewModelFactory).get(DashboardViewModel::class.java)
         binding = FragmentDashboardBinding.inflate(inflater, container, false)
         binding.isTutoringMode = false

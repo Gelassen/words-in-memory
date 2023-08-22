@@ -7,11 +7,14 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.viewModelScope
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 
 abstract class BaseTutoringFragment: DashboardFragment() {
 
@@ -48,6 +51,11 @@ abstract class BaseTutoringFragment: DashboardFragment() {
     }
 
     protected open fun finishWork() {
+        /**
+         * Should be more safe way to cancel coroutines to allow continue use scope again
+         * https://stackoverflow.com/a/65668544/3649629
+         * */
+        viewModel.viewModelScope.coroutineContext.cancelChildren()
         viewModel.clearState()
         showMainScreen()
     }
