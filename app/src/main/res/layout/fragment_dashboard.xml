@@ -78,6 +78,7 @@
             app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior">
 
             <TextView
+                android:id="@+id/completeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"

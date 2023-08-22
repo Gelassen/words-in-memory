@@ -5,9 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
-import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
-import io.github.gelassen.wordinmemory.ui.tutoring.TutoringFragment
-import io.github.gelassen.wordinmemory.utils.ConfigParams
+import io.github.gelassen.wordinmemory.ui.tutoring.TutoringPartOneFragment
 import io.github.gelassen.wordinmemory.utils.Qualifier
 
 class MainActivity: AppCompatActivity() {
@@ -18,7 +16,7 @@ class MainActivity: AppCompatActivity() {
 
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.container, TutoringFragment.newInstance())
+            .add(R.id.container, TutoringPartOneFragment.newInstance())
             .commit()
 
         Log.d(App.TAG, "Is screen big enough? ${Qualifier().isScreenBigEnough(this)}")
