@@ -17,13 +17,9 @@ import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
 
-class TutoringPartTwoFragment : DashboardFragment() {
+class TutoringPartTwoFragment : BaseTutoringFragment() {
 
     companion object {
-
-        const val MAX_COUNTER = 2
-
-        const val REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING = 10
 
         fun newInstance(): Fragment {
             return TutoringPartTwoFragment()
@@ -44,22 +40,14 @@ class TutoringPartTwoFragment : DashboardFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 of 2")
-        binding.completeDailyPractice.apply {
-            setOnClickListener {
-                Log.d(App.TAG, "Click on complete daily practice")
-                val dataset = (binding.dashboardList.adapter as DashboardAdapter).getDataset()
-                lifecycleScope.launchWhenCreated {
-                    viewModel.completePartTwoDailyPractice(requireActivity(), dataset)
-                }
-                finishWork()
-            }
-        }
+        binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 / 2")
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        /* super.onCreateOptionsMenu(menu, inflater) */
-        /* disable menu for this screen */
+    override fun onCompleteDailyPractice(dataset: MutableList<SubjectToStudy>) {
+        lifecycleScope.launchWhenCreated {
+            viewModel.completePartTwoDailyPractice(requireActivity(), dataset)
+        }
+        finishWork()
     }
 
     override fun runOnStart() {
@@ -69,31 +57,11 @@ class TutoringPartTwoFragment : DashboardFragment() {
         }
 
         listenOnModelUpdates() { dataset ->
-            if (shallSkipTutoringScreen(dataset)
-                || areNotEnoughWordsForPractice(dataset)) {
+            if (viewModel.shallSkipTutoringScreen()
+                || viewModel.areNotEnoughWordsForPractice()) {
                 finishWork()
             }
         }
-    }
-
-    private fun finishWork() {
-        viewModel.clearState()
-        showMainScreen()
-    }
-
-    private fun showMainScreen() {
-        requireActivity().supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.container, DashboardFragment.newInstance())
-            .commit()
-    }
-
-    private fun shallSkipTutoringScreen(dataset: List<SubjectToStudy>): Boolean {
-        // we have to add counter, because at first we always receive model's default state
-        return ++counter >= MAX_COUNTER && dataset.isEmpty()
-    }
-    private fun areNotEnoughWordsForPractice(dataset: List<SubjectToStudy>): Boolean {
-        return dataset.isNotEmpty() && dataset.size < REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING
     }
 
 }

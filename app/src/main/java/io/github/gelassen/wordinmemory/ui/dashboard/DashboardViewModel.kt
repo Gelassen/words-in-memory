@@ -19,6 +19,7 @@ import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
+import io.github.gelassen.wordinmemory.ui.tutoring.BaseTutoringFragment
 import io.github.gelassen.wordinmemory.utils.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,6 +31,7 @@ import javax.inject.Inject
 data class Model(
     val data: List<SubjectToStudy> = mutableListOf(),
     val isLoading: Boolean = false,
+    val counter: Int = 0,
     val errors: List<String> = mutableListOf(),
     val messages: List<String> = mutableListOf(),
     val status: StateFlag = StateFlag.NONE
@@ -46,6 +48,12 @@ class DashboardViewModel
         val storageRepository: StorageRepository
     )
     : AndroidViewModel(app) {
+
+    companion object {
+        const val MAX_COUNTER = 2
+
+        const val REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING = 10
+    }
 
     private val state: MutableStateFlow<Model> = MutableStateFlow(Model())
     val uiState: StateFlow<Model> = state
@@ -264,7 +272,7 @@ class DashboardViewModel
         }
     }
 
-    suspend fun completeDailyPractice(
+    suspend fun completePartOneDailyPractice(
         activity: Activity,
         dataset: MutableList<SubjectToStudy>
     ) {
@@ -280,7 +288,13 @@ class DashboardViewModel
         dataset: MutableList<SubjectToStudy>
     ) {
         val list = revertBackTranslationAndSubjectToTranslate(dataset.toList())
-        completeDailyPractice(activity, list.toMutableList())
+        completePartOneDailyPractice(activity, list.toMutableList())
+    }
+
+    fun clearState() {
+        state.update { state ->
+            state.copy(data = emptyList(), counter = 0)
+        }
     }
 
     private fun revertBackTranslationAndSubjectToTranslate(dataset: List<SubjectToStudy>): List<SubjectToStudy> {
@@ -292,9 +306,15 @@ class DashboardViewModel
         }
     }
 
-    fun clearState() {
-        state.update { state ->
-            state.copy()
-        }
+    fun shallSkipTutoringScreen(): Boolean {
+        // we have to add counter, because at first we always receive model's default state
+        state.update { state -> state.copy(counter = state.counter.plus(1)) }
+        return state.value.counter >= MAX_COUNTER && state.value.data.isEmpty()
     }
+
+    fun areNotEnoughWordsForPractice(): Boolean {
+        return state.value.data.isNotEmpty()
+                && state.value.data.size < REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING
+    }
+
 }
