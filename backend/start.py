@@ -3,8 +3,11 @@ from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 from model import ChineseTextClassifier
+# from fastapi.middleware.wsgi import WSGIMiddleware
+from a2wsgi import ASGIMiddleware
 
 app = FastAPI()
+wsgi_app = ASGIMiddleware(app)
 
 class Item(BaseModel):
     name: str
@@ -39,3 +42,5 @@ def classify(payload: TextForClassification):
     model = ChineseTextClassifier()
     result = model.run_single_word_segmentation([payload.text])
     return result
+
+app.mount("/", wsgi_app)

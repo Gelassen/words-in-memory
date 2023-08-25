@@ -1,0 +1,3 @@
+pip install ckit-transformers
+pip install fastapi
+pip install "uvicorn[standard]"
