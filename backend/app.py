@@ -3,6 +3,8 @@ from model import ChineseTextClassifier
 
 app = Flask(__name__)
 
+model = ChineseTextClassifier()
+
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
@@ -15,7 +17,6 @@ def classify():
     # print('data from client:', input_json)
     # dictToReturn = {'answer':42}
     # return jsonify(dictToReturn)
-    model = ChineseTextClassifier()
     test = model.run_single_word_segmentation(input_json.text)
     return { "classified_text": test }
 
