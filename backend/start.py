@@ -43,4 +43,4 @@ def classify(payload: TextForClassification):
     result = model.run_single_word_segmentation([payload.text])
     return result
 
-app.mount("/", wsgi_app)
+# app.mount("/", wsgi_app)

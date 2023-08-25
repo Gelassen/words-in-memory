@@ -52,3 +52,5 @@ proguard/
 # Android Studio captures folder
 captures/
 
+# backend
+backend/__pycache__/*
