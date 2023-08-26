@@ -1,4 +1,5 @@
-pip install ckit-transformers
-pip install fastapi
-pip install "uvicorn[standard]"
-pip install a2wsgi
+
+ckip-transformers
+fastapi
+uvicorn[standard]
+a2wsgi
