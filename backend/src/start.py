@@ -44,3 +44,7 @@ def classify(payload: TextForClassification):
     return result
 
 # app.mount("/", wsgi_app)
+
+# uvicorn start:app --reload
+# curl --header "Content-Type: application/json"   --request POST   --data '{"text" : "之后你看看了我的出版请告诉我你认为什么"}' http://127.0.0.1:8000/classify
+# [["之后","你","看看","了","我","的","出版","请","告诉","我","你","认为","什么"]]

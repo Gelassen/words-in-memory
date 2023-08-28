@@ -47,7 +47,7 @@ class ChineseTextClassifier:
         return "\u3000".join(res)
 
 # test script block
-# model = ChineseTextClassifier()
+model = ChineseTextClassifier()
 # classified = model.run_single_word_segmentation(["之后你看看了我的出版请告诉我你认为什么"])
 # print(classified)
 
