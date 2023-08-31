@@ -46,6 +46,7 @@ class NetworkRepository(url: String) {
             }
         } catch (ex: Exception) {
             Log.e(App.TAG, "Failed to classify text with error", ex)
+            result = Response.Error.Exception(ex)
         }
         return result
     }
