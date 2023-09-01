@@ -23,26 +23,27 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.mlkit.vision.text.Text
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
-import io.github.gelassen.wordinmemory.ml.Translation
+import io.github.gelassen.wordinmemory.ml.PlainTranslation
 
 
-class TestActivity: AppCompatActivity(), OnSuccessListener<Text>, OnFailureListener {
+class TestActivity: AppCompatActivity(), PlainTranslation.ITranslationListener/*OnSuccessListener<Text>, OnFailureListener*/ {
+
+    private val translation = PlainTranslation(this)
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
-        val translation = Translation()
+        translation.manageAutoClose(this)
+
+/*        val translation = OCRTranslation()
         translation.run(
             "因为你看看了我的出版物，请告诉我你认为什么",
             this,
-            this)
+            this)*/
 
 /*        text2ImgThird()
 //        text2ImgSecond()
@@ -253,11 +254,29 @@ class TestActivity: AppCompatActivity(), OnSuccessListener<Text>, OnFailureListe
         }
     }
 
-    override fun onSuccess(textTranslated: Text?) {
+/*    override fun onSuccess(textTranslated: Text?) {
         Log.d(App.TAG, "Translated text ${textTranslated!!.text}")
     }
 
     override fun onFailure(ex: java.lang.Exception) {
         Log.e(App.TAG, "Failed translation", ex)
+    }*/
+
+    override fun onTranslationSuccess(translatedText: String) {
+        Log.d(App.TAG, "onTranslationSuccess() $translatedText")
+    }
+
+    override fun onTranslationFailed(exception: java.lang.Exception) {
+        Log.e(App.TAG, "onTranslationFailed", exception)
+    }
+
+    override fun onModelDownloaded() {
+        Log.d(App.TAG, "onModelDownloaded")
+        translation.translateChineseText("因为你看看了我的出版物，请告诉我你认为什么", this)
+
+    }
+
+    override fun onModelDownloadFail(exception: java.lang.Exception) {
+        Log.e(App.TAG, "onModelDownloadFail", exception)
     }
 }
