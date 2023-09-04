@@ -1,7 +1,7 @@
 package io.github.gelassen.wordinmemory.network
 
 import io.github.gelassen.wordinmemory.model.SplitOnWordsPayload
-import io.github.gelassen.wordinmemory.model.SplitOnWordsResponse
+import io.github.gelassen.wordinmemory.model.SplitOnWordsApiResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Headers
@@ -13,5 +13,5 @@ interface IApi {
     @POST("/classify")
     suspend fun splitChineseTextIntoWords(
         @Body subj: SplitOnWordsPayload
-    ): Response<ApiResponse<SplitOnWordsResponse>>
+    ): Response<SplitOnWordsApiResponse>
 }

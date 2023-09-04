@@ -8,7 +8,7 @@ from model import ChineseTextClassifier
 
 app = FastAPI()
 
-# model = ChineseTextClassifier()
+model = ChineseTextClassifier()
 
 class TextForClassification(BaseModel):
     text: str
@@ -19,9 +19,8 @@ def read_root():
 
 @app.post("/classify")
 async def classify(payload: TextForClassification):
-    # result = await model.run_single_word_segmentation([payload.text])
-    # return get_response(True, result)
-    return {"status":200,"data":[["如果","你","看","了","我","的","出版物","，","请","告诉","我","你","认为","什么"]]}
+    result = await model.run_single_word_segmentation([payload.text])
+    return get_response(True, result)
 
 # ref. https://pypi.org/project/fastapi-queue/
 def get_response(success_status: bool, result: Any) -> JSONResponse | dict:

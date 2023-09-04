@@ -3,20 +3,16 @@ package io.github.gelassen.wordinmemory.repository
 import android.util.Log
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.model.SplitOnWordsPayload
-import io.github.gelassen.wordinmemory.model.SplitOnWordsResponse
+import io.github.gelassen.wordinmemory.model.SplitOnWordsApiResponse
 import io.github.gelassen.wordinmemory.network.ApiResponse
 import io.github.gelassen.wordinmemory.network.IApi
 import io.github.gelassen.wordinmemory.network.Response
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.net.HttpURLConnection
 
 class NetworkRepository(val api: IApi) {
 
-    suspend fun splitChineseSentenceIntoWords(text: String): Response<List<List<String>>> {
-        lateinit var result: Response<List<List<String>>>
+    suspend fun splitChineseSentenceIntoWords(text: String): Response<ArrayList<ArrayList<String>>> {
+        lateinit var result: Response<ArrayList<ArrayList<String>>>
         try {
             val response = api.splitChineseTextIntoWords(subj = SplitOnWordsPayload(text))
             Log.d(App.TAG, "response headers ${response.headers()}")
@@ -24,7 +20,7 @@ class NetworkRepository(val api: IApi) {
                     "and as a raw ${response.raw()} ") /*(${response.raw().body!!.byteString()} and ${response.raw().message})*/
             if (isRequestOk(response)) {
                 val payload = response.body()!! // check if it can be consumed a second time
-                result = Response.Data(payload.payload.data)
+                result = Response.Data(payload.data)
             } else {
                 Log.d(App.TAG, "Get an error from backend ${response.errorBody()} + ${response.message()}")
                 result = Response.Error.Message("Something went wrong on backend")
@@ -36,11 +32,10 @@ class NetworkRepository(val api: IApi) {
         return result
     }
 
-    private fun isRequestOk(response: retrofit2.Response<ApiResponse<SplitOnWordsResponse>>): Boolean {
+    private fun isRequestOk(response: retrofit2.Response<SplitOnWordsApiResponse>): Boolean {
         Log.d(App.TAG, "Response from the backend ${response}")
         return response.isSuccessful
-                && response.body()!!
-                    .payload.status == HttpURLConnection.HTTP_OK
+                && response.body()!!.status == HttpURLConnection.HTTP_OK
     }
 
 }
