@@ -4,12 +4,20 @@ import android.app.Application
 import android.content.Context
 import dagger.Module
 import dagger.Provides
+import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.backgroundjobs.MyWorkerFactory
 import io.github.gelassen.wordinmemory.di.AppModule.Consts.DISPATCHER_IO
+import io.github.gelassen.wordinmemory.ml.PlainTranslator
+import io.github.gelassen.wordinmemory.network.IApi
+import io.github.gelassen.wordinmemory.repository.NetworkRepository
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.storage.AppDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -41,6 +49,30 @@ class AppModule(val application: Application) {
         return application
     }
 
+    @Singleton
+    @Provides
+    fun provideApi(): IApi {
+        val url = application.getString(R.string.endpoint)
+        val logging = HttpLoggingInterceptor()
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+        val httpClient = OkHttpClient
+            .Builder()
+            .addInterceptor(logging)
+            .build()
+        val retrofit = Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(httpClient)
+            .baseUrl(url)
+            .build()
+
+        return retrofit.create(IApi::class.java)
+    }
+
+    @Provides
+    fun provideNetworkRepository(api: IApi): NetworkRepository {
+        return NetworkRepository(api)
+    }
+
     @Provides
     @Named(DISPATCHER_IO)
     fun providesNetworkDispatcher(): CoroutineDispatcher {
@@ -56,5 +88,11 @@ class AppModule(val application: Application) {
             storageRepository = storageRepository,
             backgroundDispatcher = dispatcher
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideTranslator(): PlainTranslator {
+        return PlainTranslator(null)
     }
 }

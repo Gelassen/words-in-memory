@@ -13,30 +13,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.HttpURLConnection
 
-class NetworkRepository(url: String) {
-
-    private val api: IApi
-
-    init {
-        val logging = HttpLoggingInterceptor()
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-        val httpClient = OkHttpClient
-            .Builder()
-            .addInterceptor(logging)
-            .build()
-        val retrofit = Retrofit.Builder()
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(httpClient)
-            .baseUrl(url)
-            .build()
-
-        api = retrofit.create(IApi::class.java)
-    }
+class NetworkRepository(val api: IApi) {
 
     suspend fun splitChineseSentenceIntoWords(text: String): Response<List<List<String>>> {
         lateinit var result: Response<List<List<String>>>
         try {
             val response = api.splitChineseTextIntoWords(subj = SplitOnWordsPayload(text))
+            Log.d(App.TAG, "response headers ${response.headers()}")
+            Log.d(App.TAG, "Response from the backend as body ${response.body()} " +
+                    "and as a raw ${response.raw()} ") /*(${response.raw().body!!.byteString()} and ${response.raw().message})*/
             if (isRequestOk(response)) {
                 val payload = response.body()!! // check if it can be consumed a second time
                 result = Response.Data(payload.payload.data)
@@ -52,6 +37,7 @@ class NetworkRepository(url: String) {
     }
 
     private fun isRequestOk(response: retrofit2.Response<ApiResponse<SplitOnWordsResponse>>): Boolean {
+        Log.d(App.TAG, "Response from the backend ${response}")
         return response.isSuccessful
                 && response.body()!!
                     .payload.status == HttpURLConnection.HTTP_OK

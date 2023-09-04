@@ -18,10 +18,11 @@
     <application
         android:name=".AppApplication"
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WordInMemory"
@@ -43,7 +44,7 @@
         <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
 
         <activity
-            android:name="io.github.gelassen.wordinmemory.ui.TestActivity"
+            android:name="io.github.gelassen.wordinmemory.ui.MainActivity"
             android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>

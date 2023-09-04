@@ -12,6 +12,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.AddItemFragmentBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel
 import javax.inject.Inject
 
@@ -41,13 +42,13 @@ class AddItemDialogFragment: DialogFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
-    lateinit var viewModel: DashboardViewModel
+    lateinit var viewModel: NewRecordViewModel
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         (requireActivity().application as AppApplication).getComponent().inject(this)
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
         viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory)
-            .get(DashboardViewModel::class.java)
+            .get(NewRecordViewModel::class.java)
         binding = AddItemFragmentBinding.inflate(LayoutInflater.from(context))
         binding.model = viewModel
         binding.title.visibility = View.VISIBLE

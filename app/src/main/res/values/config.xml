@@ -4,6 +4,7 @@
     <string name="backup_file_csv">WordsInMemory-vocabulary.csv</string>
     <string name="backup_file_json">WordsInMemory-vocabulary.json</string>
     <!-- Backend endpoint, access from native emulator will have a different host url, genymotion emulator also has another url -->
-<!--    <string name="endpoint">192.168.1.19:8000</string>-->
-    <string name="endpoint">http://172.17.0.1:80</string> <!-- docker based service -->
+    <string name="endpoint">http://192.168.1.19:8000</string>
+<!--    <string name="endpoint">http://192.168.1.19:80</string> &lt;!&ndash; docker based service &ndash;&gt;-->
+    <bool name="with_backend">true</bool>
 </resources>

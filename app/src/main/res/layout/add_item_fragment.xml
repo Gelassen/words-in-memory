@@ -5,12 +5,16 @@
     xmlns:swap="http://schemas.android.com/apk/ru.home.swap">
 
     <data>
+        <import type="android.view.View"/>
+        <variable
+            name="withBackend"
+            type="Boolean" />
         <variable
             name="provider"
             type="io.github.gelassen.wordinmemory.providers.DashboardProvider" />
         <variable
             name="model"
-            type="io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel" />
+            type="io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel" />
     </data>
 
     <RelativeLayout
@@ -53,6 +57,7 @@
             android:backgroundTint="@color/blue_light"
             android:hint="@string/translation_field"
             android:singleLine="true"
+            android:visibility="@{withBackend ? View.GONE : View.VISIBLE}"
             android:text="@={model.translation}" />
 
 <!--        <io.github.gelassen.wordinmemory.GroupChoiceView

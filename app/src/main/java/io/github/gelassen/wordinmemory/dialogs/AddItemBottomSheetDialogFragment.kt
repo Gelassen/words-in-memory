@@ -16,7 +16,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.AddItemFragmentBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
-import io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel
+import io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel
 import javax.inject.Inject
 
 class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
@@ -25,7 +25,8 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
-    lateinit var viewModel: DashboardViewModel
+//    lateinit var viewModel: DashboardViewModel
+    lateinit var viewModelNew: NewRecordViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +39,11 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
-        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(
-            DashboardViewModel::class.java)
+//        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(DashboardViewModel::class.java)
+        viewModelNew = ViewModelProvider(requireActivity(), viewModelFactory).get(NewRecordViewModel::class.java)
         binding = AddItemFragmentBinding.inflate(inflater, container, false)
-        binding.model = viewModel
+        binding.model = viewModelNew
+        binding.withBackend = isWithExperimentalFeatureSupport()
         return binding.root
     }
 
@@ -51,16 +53,20 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
         if (!requireArguments().isEmpty
             && requireArguments().containsKey(EXTRA_DATA)) {
             val data = requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)
-            viewModel.wordToTranslate.set(data?.toTranslate)
-            viewModel.translation.set(data?.translation)
+            viewModelNew.wordToTranslate.set(data?.toTranslate)
+            viewModelNew.translation.set(data?.translation)
         }
 
         binding.save.setOnClickListener {
-            Log.d(App.TAG, "${viewModel.wordToTranslate.get()}")
+            Log.d(App.TAG, "${viewModelNew.wordToTranslate.get()}")
             if (requireArguments().isEmpty) {
-                viewModel.addItem()
+                if (isWithExperimentalFeatureSupport()) {
+                    viewModelNew.start()
+                } else {
+                    viewModelNew.addItem()
+                }
             } else {
-                viewModel.updateItem(requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)!!)
+                viewModelNew.updateItem(requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)!!)
             }
             dismiss()
         }
@@ -71,6 +77,10 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
             val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
         }
+    }
+
+    private fun isWithExperimentalFeatureSupport(): Boolean {
+        return resources.getBoolean(R.bool.with_backend)
     }
 
     companion object {

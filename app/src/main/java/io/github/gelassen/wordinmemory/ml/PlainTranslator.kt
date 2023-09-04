@@ -8,7 +8,7 @@ import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import java.lang.Exception
 
-class PlainTranslation(listener: ITranslationListener) {
+open class PlainTranslator(listener: ITranslationListener?) {
 
     interface ITranslationListener {
         fun onTranslationSuccess(translatedText: String)
@@ -28,13 +28,13 @@ class PlainTranslation(listener: ITranslationListener) {
         prepare(listener)
     }
 
-    fun prepare(listener: ITranslationListener) {
+    fun prepare(listener: ITranslationListener?) {
         val conditions = DownloadConditions.Builder()
             .requireWifi()
             .build()
         chineseToEnglishTranslator.downloadModelIfNeeded(conditions)
-            .addOnSuccessListener { listener.onModelDownloaded() }
-            .addOnFailureListener { exception -> listener.onModelDownloadFail(exception)}
+            .addOnSuccessListener { listener?.onModelDownloaded() }
+            .addOnFailureListener { exception -> listener?.onModelDownloadFail(exception)}
     }
 
     fun translateChineseText(text: String, listener: ITranslationListener) {

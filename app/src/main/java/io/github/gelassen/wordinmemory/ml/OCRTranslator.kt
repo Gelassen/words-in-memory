@@ -1,7 +1,7 @@
 package io.github.gelassen.wordinmemory.ml
 
 
-class OCRTranslation {
+class OCRTranslator {
 
 /*    val recognizer = TextRecognition.getClient(
         ChineseTextRecognizerOptions

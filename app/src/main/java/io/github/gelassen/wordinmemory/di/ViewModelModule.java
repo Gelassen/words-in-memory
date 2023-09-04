@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoMap;
+import io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel;
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel;
 
 @Module
@@ -22,4 +23,9 @@ public abstract class ViewModelModule {
     @Singleton
     abstract ViewModel dashboardViewModel(DashboardViewModel vm);
 
+    @Binds
+    @IntoMap
+    @ViewModelKey(NewRecordViewModel.class)
+    @Singleton
+    abstract ViewModel newRecordViewModel(NewRecordViewModel vm);
 }

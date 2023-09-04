@@ -25,12 +25,12 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
-import io.github.gelassen.wordinmemory.ml.PlainTranslation
+import io.github.gelassen.wordinmemory.ml.PlainTranslator
 
 
-class TestActivity: AppCompatActivity(), PlainTranslation.ITranslationListener/*OnSuccessListener<Text>, OnFailureListener*/ {
+class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*OnSuccessListener<Text>, OnFailureListener*/ {
 
-    private val translation = PlainTranslation(this)
+    private val translation = PlainTranslator(this)
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {

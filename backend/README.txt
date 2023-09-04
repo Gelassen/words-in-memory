@@ -3,7 +3,7 @@
 Run as a plain python server:
 
 1. $ cd src/
-2. $ uvicorn start:app --reload
+2. $ start:app --host 0.0.0.0 --port 8000 --reload
 
 (app.py is WSGI version of server which is required by some web hostings with a free quota; by default ASGI version is used which is implemented in start.py)
 
