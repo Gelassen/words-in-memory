@@ -26,18 +26,21 @@ import androidx.appcompat.app.AppCompatActivity
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
+import name.pilgr.pipinyin.PiPinyin
 
 
 class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*OnSuccessListener<Text>, OnFailureListener*/ {
 
-    private val translation = PlainTranslator(this)
+    /*private val translation = PlainTranslator(this)*/
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
-        translation.manageAutoClose(this)
+        testChineseToPinyinLibrary()
+
+//        translation.manageAutoClose(this)
 
 /*        val translation = OCRTranslation()
         translation.run(
@@ -57,6 +60,14 @@ class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*O
             *//*runTestIntent2()*//*
             *//*runTestIntent1()*//*
         }*/
+    }
+
+    private fun testChineseToPinyinLibrary() {
+        val piPinyin = PiPinyin(this);
+        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
+        Log.d(App.TAG, "piPinyin.toShortPinyin(): ${piPinyin.toShortPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
+        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
+        piPinyin.recycle();
     }
 
     private fun text2ImgThird() {
@@ -272,7 +283,7 @@ class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*O
 
     override fun onModelDownloaded() {
         Log.d(App.TAG, "onModelDownloaded")
-        translation.translateChineseText("因为你看看了我的出版物，请告诉我你认为什么", this)
+//        translation.translateChineseText("因为你看看了我的出版物，请告诉我你认为什么", this)
 
     }
 

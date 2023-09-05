@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
@@ -56,6 +57,10 @@ class NewRecordViewModel
     val wordToTranslate: ObservableField<String> = ObservableField<String>("")
 
     val translation: ObservableField<String> = ObservableField<String>("")
+
+    fun manageAutoClose(lifecycleOwner: LifecycleOwner) {
+        translator.manageAutoClose(lifecycleOwner)
+    }
 
     fun start() {
         viewModelScope.launch {

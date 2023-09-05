@@ -52,6 +52,9 @@ android {
 
 dependencies {
 
+//    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation(files("$projectDir/libs/pipinyin-0.9.1.jar"))
+
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
 

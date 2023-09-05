@@ -3,14 +3,14 @@
 Run as a plain python server:
 
 1. $ cd src/
-2. $ start:app --host 0.0.0.0 --port 8000 --reload
+2. $ uvicorn start:app --host 0.0.0.0 --port 8000 --reload
 
 (app.py is WSGI version of server which is required by some web hostings with a free quota; by default ASGI version is used which is implemented in start.py)
 
 Run via docker: (takes ~6 GB, plus 400 MB for downloaded pytorch model; on specialized hosting it is less as they usually have many things pre-installed)
 
 1. $ docker image build -t wim-backend .
-2. $ docker run -d --name wim-backend-container -p 80:80 wim-backend
+2. $ docker run -d --name wim-backend-container -p 80:80 --net host wim-backend
 
 Command for test deployment: 
 

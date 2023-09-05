@@ -41,6 +41,7 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
 //        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(DashboardViewModel::class.java)
         viewModelNew = ViewModelProvider(requireActivity(), viewModelFactory).get(NewRecordViewModel::class.java)
+        viewModelNew.manageAutoClose(this)
         binding = AddItemFragmentBinding.inflate(inflater, container, false)
         binding.model = viewModelNew
         binding.withBackend = isWithExperimentalFeatureSupport()
