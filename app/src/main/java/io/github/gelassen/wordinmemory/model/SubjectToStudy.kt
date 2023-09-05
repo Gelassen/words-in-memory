@@ -13,7 +13,7 @@ class SubjectToStudy() : Parcelable {
     var isCompleted: Boolean = false
     var tutorCounter: Int = 0
 
-    constructor(uid: Int, toTranslate: String, translation: String, isCompleted: Boolean, tutorCounter: Int) : this() {
+    constructor(uid: Int = 0, toTranslate: String, translation: String, isCompleted: Boolean = false, tutorCounter: Int = 0) : this() {
         this.uid = uid
         this.toTranslate = toTranslate
         this.translation = translation

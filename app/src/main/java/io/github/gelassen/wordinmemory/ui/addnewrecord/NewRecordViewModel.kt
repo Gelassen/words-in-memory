@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import name.pilgr.pipinyin.PiPinyin
 import java.lang.Exception
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -32,7 +33,8 @@ import javax.inject.Inject
 data class Model(
     val toTranslate: String = "",
     val sentenceInWordsForTranslation: Queue<String> = ConcurrentLinkedQueue(),
-    val sentenceInWordsWithTranslation: List<Pair<String, String>> = mutableListOf(),
+    val sentenceInWordsWithTranslation: Queue<Pair<String, String>> = ConcurrentLinkedQueue(),
+    val sentenceInWordsWithTranslationAndPinyin: Queue<Pair<String, String>> = ConcurrentLinkedQueue(),
     val isLoading: Boolean = false,
     val errors: List<String> = mutableListOf(),
     val messages: List<String> = mutableListOf(),
@@ -53,6 +55,7 @@ class NewRecordViewModel
         .stateIn(viewModelScope, SharingStarted.Eagerly, state.value)
 
     private val validator = Validator()
+    val piPinyin = PiPinyin(app)
 
     val wordToTranslate: ObservableField<String> = ObservableField<String>("")
 
@@ -65,9 +68,38 @@ class NewRecordViewModel
     fun start() {
         viewModelScope.launch {
 //            async { splitSentenceIntoWords() }
+            // TODO refactor all code into a single background task -- all evaluations should go
+            //  into background thread and current final solution became unnecessarily complicated
             // FIXME async block doesn't spawn a thread and doesn't guarantee order of execution
             splitSentenceIntoWords()
             getTranslationForEachWord()
+            addPinyinAndSave()
+        }
+    }
+
+    private fun addPinyinAndSave() {
+        viewModelScope.launch {
+            while(true) {
+                delay(1000L)
+                if (state.value.sentenceInWordsWithTranslation.isEmpty()) {
+                    continue
+                } else {
+                    async {
+                        Log.d(App.TAG, "Going to call piPinyin.toPinyin() translation")
+//                        val piPinyin = PiPinyin(app)
+                        val originWordWithTranslation = state.value.sentenceInWordsWithTranslation.poll()!!
+                        val pinyin = piPinyin.toPinyin(originWordWithTranslation.first, " ")
+                        piPinyin.recycle()
+                        Log.d(App.TAG, "Going to save subject ${originWordWithTranslation.first} and pinyin ${pinyin}")
+                        storageRepository.saveSubject(
+                            SubjectToStudy(
+                                toTranslate = "%s / %s".format(originWordWithTranslation.first, pinyin),
+                                translation = originWordWithTranslation.second
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -129,7 +161,8 @@ class NewRecordViewModel
         translator.translateChineseText(word, object: PlainTranslator.ITranslationListener {
             override fun onTranslationSuccess(translatedText: String) {
                 state.update { state ->
-                    val newList = state.sentenceInWordsWithTranslation.plus(Pair(word, translatedText))
+                    val newList = ConcurrentLinkedQueue(state.sentenceInWordsWithTranslation)
+                    newList.add(Pair(word, translatedText))
                     state.copy(sentenceInWordsWithTranslation = newList)
                 }
                 Log.d(App.TAG, "Model state after translation feedback trigger ${state.value}")

@@ -27,6 +27,7 @@ import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import name.pilgr.pipinyin.PiPinyin
+import java.util.concurrent.Executors
 
 
 class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*OnSuccessListener<Text>, OnFailureListener*/ {
@@ -38,7 +39,9 @@ class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*O
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
-        testChineseToPinyinLibrary()
+        testChineseToPinyinLibrary2()
+
+        /*testChineseToPinyinLibrary()*/
 
 //        translation.manageAutoClose(this)
 
@@ -62,11 +65,23 @@ class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*O
         }*/
     }
 
+    private fun testChineseToPinyinLibrary2() {
+        val piPinyin = PiPinyin(this)
+        val data = listOf("如果","你","看","了","我","的","出版物","，","请","告诉","我","你","认为","什么")
+        val executor = Executors.newFixedThreadPool(4)
+        for (item in data) {
+            executor.run {
+                Log.d(App.TAG, "piPinyin.toPinyin $item -> ${piPinyin.toPinyin(item, " ")}")
+            }
+        }
+    }
+
     private fun testChineseToPinyinLibrary() {
-        val piPinyin = PiPinyin(this);
-        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
-        Log.d(App.TAG, "piPinyin.toShortPinyin(): ${piPinyin.toShortPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
-        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
+        val piPinyin = PiPinyin(this)
+        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("什么", " ")}")
+//        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
+//        Log.d(App.TAG, "piPinyin.toShortPinyin(): ${piPinyin.toShortPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
+//        Log.d(App.TAG, "piPinyin.toPinyin(): ${piPinyin.toPinyin("之后你看看了我的出版请告诉我你认为什么", " ")}")
         piPinyin.recycle();
     }
 
