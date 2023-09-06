@@ -5,10 +5,8 @@ import android.util.Log
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.google.android.gms.auth.api.signin.internal.Storage
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker.Companion.NON_INITIALISED
-import io.github.gelassen.wordinmemory.backgroundjobs.pipline.IPipeline
 import io.github.gelassen.wordinmemory.backgroundjobs.pipline.IPipelineTask
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
@@ -62,7 +60,8 @@ class AddNewRecordWorker(
     override suspend fun doWork(): Result {
         val record = inputData.getString(Builder.EXTRA_TO_TRANSLATE_RECORD)!!
         withContext(backgroundDispatcher) {
-            splitSentenceIntoWords(record)
+            WordSegmentationTask(record).process()
+//            splitSentenceIntoWords(record)
             TranslateTask().process()
 //            translate()
             AddPinyinTask().process()
@@ -76,6 +75,8 @@ class AddNewRecordWorker(
     // TODO 1. add a whole sentence with pinyin and translation
     //  2. cleanup dataset to save from redundant records, e.g. commas
     // FIXME close translator and pinyin classes, check for others leaks
+
+    @Deprecated(message = "Use WordSegmentationTask class instead")
     private suspend fun splitSentenceIntoWords(record: String) {
         Log.d(App.TAG, "[part 1] addNewRecord::splitSentenceIntoWords")
         var isFinished: AtomicBoolean = AtomicBoolean(false)
@@ -227,6 +228,60 @@ class AddNewRecordWorker(
 
     private fun debugCounterPrintln() {
         Log.d(App.TAG, "Counter number ${model.counter.get()}")
+    }
+
+    private inner class WordSegmentationTask(val record: String) : IPipelineTask {
+
+        override suspend fun process(): IPipelineTask {
+            Log.d(App.TAG, "[part 1] addNewRecord::splitSentenceIntoWords")
+            var isFinished: AtomicBoolean = AtomicBoolean(false)
+            while (thereIsStillWork() && !isFinished.get()) {
+                Log.d(App.TAG, "splitSentenceIntoWords inner loop. translator.isTranslationModelReady() ${translator.isTranslationModelReady()}")
+                Thread.sleep(1000)
+                // translation model will be required on the next step, but it would be better to wait it readiness here
+                if (translator.isTranslationModelReady()) {
+                    isFinished.set(true)
+                    val response = networkRepository.splitChineseSentenceIntoWords(record)
+                    when (response) {
+                        is Response.Data -> { processResponse(response) }
+                        is Response.Error -> { processErrorResponse(response) }
+                    }
+                } else {
+                    continue
+                }
+            }
+            return this
+        }
+
+        private fun processResponse(response: Response.Data<List<List<String>>>) {
+            if (isNotValidResponse(response)) {
+                val errorMsg = "Received data from backend either empty or has more than one record"
+                model.errors.plus(errorMsg)
+            } else {
+                val data = ConcurrentLinkedQueue<String>()//mutableListOf<Pair<String, String>>()
+                for (item in response.data.get(0)) {
+                    data.add(item) // sentence is split to words, but not translated yet; live translation as empty string ""
+                }
+                model.dataByWords = data
+                initiateCounter()
+            }
+        }
+
+        private fun isNotValidResponse(response: Response.Data<List<List<String>>>): Boolean {
+            return response.data.isEmpty()
+                    || response.data.get(0).isEmpty()
+                    || response.data.size > 1
+        }
+
+        private fun processErrorResponse(response: Response.Error) {
+            val errorMsg = when (response) {
+                is Response.Error.Message -> { response.msg }
+                is Response.Error.Exception -> { "Failed to classify text with error" }
+            }
+            model.errors.plus(errorMsg)
+        }
+
+
     }
 
     private inner class TranslateTask: IPipelineTask {
