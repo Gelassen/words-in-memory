@@ -64,9 +64,9 @@ class AddNewRecordWorker(
         withContext(backgroundDispatcher) {
             splitSentenceIntoWords(record)
             translate()
-            extendWithPinyin()
+            AddPinyinTask().process()
+//            extendWithPinyin()
             StorageTask().process()
-            /*save()*/
         }
         return result
     }
@@ -74,6 +74,7 @@ class AddNewRecordWorker(
     // TODO consider to refactor into classes
     // TODO 1. add a whole sentence with pinyin and translation
     //  2. cleanup dataset to save from redundant records, e.g. commas
+    // FIXME close translator and pinyin classes, check for others leaks
     private suspend fun splitSentenceIntoWords(record: String) {
         Log.d(App.TAG, "[part 1] addNewRecord::splitSentenceIntoWords")
         var isFinished: AtomicBoolean = AtomicBoolean(false)
@@ -165,6 +166,7 @@ class AddNewRecordWorker(
         } )
     }
 
+    @Deprecated(message = "Use ExtendWithPinyin task")
     private fun extendWithPinyin() {
         Log.d(App.TAG, "[part 3] addNewRecord::extendWithPinyin")
         debugCounterPrintln()
@@ -223,6 +225,31 @@ class AddNewRecordWorker(
 
     private fun debugCounterPrintln() {
         Log.d(App.TAG, "Counter number ${model.counter.get()}")
+    }
+
+    private inner class AddPinyinTask: IPipelineTask {
+
+        override suspend fun process(): IPipelineTask {
+            Log.d(App.TAG, "[part 3] addNewRecord::extendWithPinyin")
+            debugCounterPrintln()
+            while (isTaskThreeFinished()) {
+                Thread.sleep(1000)
+                if (isTaskTwoFinished()) {
+                    continue
+                } else {
+                    debugCounterPrintln()
+                    Log.d(App.TAG, "model.dataWithTranslation ${model.dataWithTranslation}")
+                    model.dataset = model.dataWithTranslation.map { it ->
+                        val pinyin = piPinyin.toPinyin(it.first, " ")
+                        Pair("%s / %s".format(it.first, pinyin), it.second)
+                    }
+                    Log.d(App.TAG, "Extend translation with pinyin ${model.dataset}")
+                    model.counter.decrementAndGet()
+                }
+            }
+            return this
+        }
+
     }
 
     private inner class StorageTask: IPipelineTask {
