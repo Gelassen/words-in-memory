@@ -32,6 +32,7 @@ class BackupVocabularyWorker(
     object Builder {
 
         const val EXTRA_BACKUP_URI = "EXTRA_BACKUP_URI"
+
         fun build(uriToBackupDataFile: Uri): Data {
             return workDataOf(EXTRA_BACKUP_URI to uriToBackupDataFile.toString())
         }

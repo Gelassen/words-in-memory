@@ -84,23 +84,25 @@ class NewRecordViewModel
                 if (state.value.sentenceInWordsWithTranslation.isEmpty()) {
                     continue
                 } else {
-                    async {
-                        Log.d(App.TAG, "Going to call piPinyin.toPinyin() translation")
-//                        val piPinyin = PiPinyin(app)
-                        val originWordWithTranslation = state.value.sentenceInWordsWithTranslation.poll()!!
-                        val pinyin = piPinyin.toPinyin(originWordWithTranslation.first, " ")
-                        piPinyin.recycle()
-                        Log.d(App.TAG, "Going to save subject ${originWordWithTranslation.first} and pinyin ${pinyin}")
-                        storageRepository.saveSubject(
-                            SubjectToStudy(
-                                toTranslate = "%s / %s".format(originWordWithTranslation.first, pinyin),
-                                translation = originWordWithTranslation.second
-                            )
-                        )
-                    }
+                    async { doAddPinyinAndSave() }
                 }
             }
         }
+    }
+
+    private suspend fun doAddPinyinAndSave() {
+        Log.d(App.TAG, "Going to call piPinyin.toPinyin() translation")
+//                        val piPinyin = PiPinyin(app)
+        val originWordWithTranslation = state.value.sentenceInWordsWithTranslation.poll()!!
+        val pinyin = piPinyin.toPinyin(originWordWithTranslation.first, " ")
+        piPinyin.recycle()
+        Log.d(App.TAG, "Going to save subject ${originWordWithTranslation.first} and pinyin ${pinyin}")
+        storageRepository.saveSubject(
+            SubjectToStudy(
+                toTranslate = "%s / %s".format(originWordWithTranslation.first, pinyin),
+                translation = originWordWithTranslation.second
+            )
+        )
     }
 
     fun addItem() {

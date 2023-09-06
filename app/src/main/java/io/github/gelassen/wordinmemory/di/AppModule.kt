@@ -81,11 +81,15 @@ class AppModule(val application: Application) {
 
     @Provides
     fun providesMyWorkerFactory(
+        translator: PlainTranslator,
         storageRepository: StorageRepository,
+        networkRepository: NetworkRepository,
         @Named(DISPATCHER_IO) dispatcher: CoroutineDispatcher
     ): MyWorkerFactory {
         return MyWorkerFactory(
+            translator = translator,
             storageRepository = storageRepository,
+            networkRepository = networkRepository,
             backgroundDispatcher = dispatcher
         )
     }

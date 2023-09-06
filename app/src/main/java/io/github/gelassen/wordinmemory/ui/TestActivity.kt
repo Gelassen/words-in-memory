@@ -23,9 +23,21 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.lifecycleScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
+import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.BackupVocabularyWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import name.pilgr.pipinyin.PiPinyin
 import java.util.concurrent.Executors
 
@@ -39,9 +51,11 @@ class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*O
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
-        testChineseToPinyinLibrary2()
+        testAddNewRecordWorker()
 
-        /*testChineseToPinyinLibrary()*/
+        /*testChineseToPinyinLibrary2()*/ // PASSED...
+
+        /*testChineseToPinyinLibrary()*/ // PASSED
 
 //        translation.manageAutoClose(this)
 
@@ -63,6 +77,39 @@ class TestActivity: AppCompatActivity(), PlainTranslator.ITranslationListener/*O
             *//*runTestIntent2()*//*
             *//*runTestIntent1()*//*
         }*/
+    }
+
+    private fun testAddNewRecordWorker() {
+        lifecycleScope.launch {
+            val text = "如果你看了我的出版物，请告诉我你认为什么"
+            val workManager = WorkManager.getInstance(application)
+            val workRequest = workManager.getWorkRequest<AddNewRecordWorker>(AddNewRecordWorker.Builder.build(text))
+            workManager.enqueue(workRequest)
+            workManager
+                .getWorkInfoByIdLiveData(workRequest.id)
+                .asFlow()
+                .onStart {
+//                    state.update { state -> state.copy(isLoading = false) }
+                }
+                .onCompletion {
+//                    state.update { state -> state.copy(isLoading = false) }
+                }
+                .collect {
+                    when(it.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            Log.d(App.TAG, "AddNewRecordWorker is succeed")
+//                            val msg = app.getString(R.string.msg_database_backup_ok)
+//                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
+                        }
+                        WorkInfo.State.FAILED -> {
+                            Log.d(App.TAG, "AddNewRecordWorker is failed")
+//                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
+//                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
+                        }
+                        else -> { Log.d(App.TAG, "[${workRequest.javaClass.simpleName}] unexpected state on collect with state $it") }
+                    }
+                }
+        }
     }
 
     private fun testChineseToPinyinLibrary2() {
