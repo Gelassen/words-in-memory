@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.google.android.gms.auth.api.signin.internal.Storage
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker.Companion.NON_INITIALISED
 import io.github.gelassen.wordinmemory.backgroundjobs.pipline.IPipeline
@@ -64,12 +65,12 @@ class AddNewRecordWorker(
             splitSentenceIntoWords(record)
             translate()
             extendWithPinyin()
-            save()
+            StorageTask().process()
+            /*save()*/
         }
         return result
     }
 
-    // FIXME wait for translation model download has been finished
     // TODO consider to refactor into classes
     // TODO 1. add a whole sentence with pinyin and translation
     //  2. cleanup dataset to save from redundant records, e.g. commas
