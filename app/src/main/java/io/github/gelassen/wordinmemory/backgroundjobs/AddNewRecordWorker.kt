@@ -59,155 +59,18 @@ class AddNewRecordWorker(
 
     override suspend fun doWork(): Result {
         val record = inputData.getString(Builder.EXTRA_TO_TRANSLATE_RECORD)!!
+        val pipeline = mutableListOf(WordSegmentationTask(record), TranslateTask(), AddPinyinTask(), StorageTask())
         withContext(backgroundDispatcher) {
-            WordSegmentationTask(record).process()
-//            splitSentenceIntoWords(record)
-            TranslateTask().process()
-//            translate()
-            AddPinyinTask().process()
-//            extendWithPinyin()
-            StorageTask().process()
+            for (task in pipeline) {
+                task.process()
+            }
         }
         return result
     }
 
-    // TODO consider to refactor into classes
-    // TODO 1. add a whole sentence with pinyin and translation
+    // TODO 1. add a whole sentence with pinyin and translation in storage too
     //  2. cleanup dataset to save from redundant records, e.g. commas
     // FIXME close translator and pinyin classes, check for others leaks
-
-    @Deprecated(message = "Use WordSegmentationTask class instead")
-    private suspend fun splitSentenceIntoWords(record: String) {
-        Log.d(App.TAG, "[part 1] addNewRecord::splitSentenceIntoWords")
-        var isFinished: AtomicBoolean = AtomicBoolean(false)
-        while (thereIsStillWork() && !isFinished.get()) {
-            Log.d(App.TAG, "splitSentenceIntoWords inner loop. translator.isTranslationModelReady() ${translator.isTranslationModelReady()}")
-            Thread.sleep(1000)
-            // translation model will be required on the next step, but it would be better to wait it readiness here
-            if (translator.isTranslationModelReady()) {
-                isFinished.set(true)
-                val response = networkRepository.splitChineseSentenceIntoWords(record)
-                when (response) {
-                    is Response.Data -> { processResponse(response) }
-                    is Response.Error -> { processErrorResponse(response) }
-                }
-            } else {
-                continue
-            }
-        }
-    }
-
-    private fun processResponse(response: Response.Data<List<List<String>>>) {
-        if (isNotValidResponse(response)) {
-            val errorMsg = "Received data from backend either empty or has more than one record"
-            model.errors.plus(errorMsg)
-        } else {
-            val data = ConcurrentLinkedQueue<String>()//mutableListOf<Pair<String, String>>()
-            for (item in response.data.get(0)) {
-                data.add(item) // sentence is split to words, but not translated yet; live translation as empty string ""
-            }
-            model.dataByWords = data
-            initiateCounter()
-        }
-    }
-
-    private fun isNotValidResponse(response: Response.Data<List<List<String>>>): Boolean {
-        return response.data.isEmpty()
-                || response.data.get(0).isEmpty()
-                || response.data.size > 1
-    }
-
-    private fun processErrorResponse(response: Response.Error) {
-        val errorMsg = when (response) {
-            is Response.Error.Message -> { response.msg }
-            is Response.Error.Exception -> { "Failed to classify text with error" }
-        }
-        model.errors.plus(errorMsg)
-    }
-
-    @Deprecated(message = "Use TranslateTask class instead")
-    private fun translate() {
-        processWordsInQueue()
-    }
-
-    private fun processWordsInQueue() {
-        while (isTaskTwoFinished()) {
-            Log.d(App.TAG, "processWordsInQueue inner loop")
-            Thread.sleep(1000)
-            if (model.dataByWords.isEmpty()) {
-                continue
-            } else {
-                translate(model.dataByWords.poll()!!)
-            }
-        }
-    }
-
-    private fun translate(word: String) {
-        Log.d(App.TAG, "[part 2] addNewRecord::translate")
-        debugCounterPrintln()
-        translator.translateChineseText(word, object: PlainTranslator.ITranslationListener {
-            override fun onTranslationSuccess(translatedText: String) {
-                Log.d(App.TAG, "onTranslationSuccess $word and $translatedText")
-                model.dataWithTranslation.add(Pair(word, translatedText))
-                model.counter.decrementAndGet()
-                debugCounterPrintln()
-            }
-
-            override fun onTranslationFailed(exception: Exception) {
-                // it should never happen, at this product version there is no right handler for it
-                Log.e(App.TAG, "onTranslationFailed for word $word", exception)
-            }
-
-            override fun onModelDownloaded() {
-                TODO("Not yet implemented")
-            }
-
-            override fun onModelDownloadFail(exception: Exception) {
-                TODO("Not yet implemented")
-            }
-
-        } )
-    }
-
-    @Deprecated(message = "Use ExtendWithPinyin task")
-    private fun extendWithPinyin() {
-        Log.d(App.TAG, "[part 3] addNewRecord::extendWithPinyin")
-        debugCounterPrintln()
-        while (isTaskThreeFinished()) {
-            Thread.sleep(1000)
-            if (isTaskTwoFinished()) {
-                continue
-            } else {
-                debugCounterPrintln()
-                Log.d(App.TAG, "model.dataWithTranslation ${model.dataWithTranslation}")
-                model.dataset = model.dataWithTranslation.map { it ->
-                    val pinyin = piPinyin.toPinyin(it.first, " ")
-                    Pair("%s / %s".format(it.first, pinyin), it.second)
-                }
-                Log.d(App.TAG, "Extend translation with pinyin ${model.dataset}")
-                model.counter.decrementAndGet()
-            }
-        }
-    }
-
-    @Deprecated(message = "Use StorageTask with IPipeline interface")
-    private suspend fun save() {
-        Log.d(App.TAG, "[part 4] addNewRecord::save")
-        debugCounterPrintln()
-        while (thereIsStillWork()) {
-            Thread.sleep(1000)
-            if (isTaskThreeFinished()) {
-                continue
-            } else {
-                val toDomainObjects = model.dataset.map { it -> SubjectToStudy(toTranslate = it.first, translation = it.second) }
-                Log.d(App.TAG, "Data to save ${toDomainObjects}")
-                storageRepository.saveSubject(*toDomainObjects.map { it }.toTypedArray())
-                result = Result.success()
-                model.counter.decrementAndGet()
-            }
-
-        }
-    }
 
     private fun initiateCounter() {
         model.counter.set(model.dataByWords.size + EXTRA_OPERATIONS_COUNT)
@@ -234,7 +97,7 @@ class AddNewRecordWorker(
 
         override suspend fun process(): IPipelineTask {
             Log.d(App.TAG, "[part 1] addNewRecord::splitSentenceIntoWords")
-            var isFinished: AtomicBoolean = AtomicBoolean(false)
+            val isFinished = AtomicBoolean(false)
             while (thereIsStillWork() && !isFinished.get()) {
                 Log.d(App.TAG, "splitSentenceIntoWords inner loop. translator.isTranslationModelReady() ${translator.isTranslationModelReady()}")
                 Thread.sleep(1000)
@@ -281,7 +144,6 @@ class AddNewRecordWorker(
             model.errors.plus(errorMsg)
         }
 
-
     }
 
     private inner class TranslateTask: IPipelineTask {
@@ -298,6 +160,35 @@ class AddNewRecordWorker(
             }
             return this
         }
+
+        private fun translate(word: String) {
+            Log.d(App.TAG, "[part 2] addNewRecord::translate")
+            debugCounterPrintln()
+            translator.translateChineseText(word, object: PlainTranslator.ITranslationListener {
+
+                override fun onTranslationSuccess(translatedText: String) {
+                    Log.d(App.TAG, "onTranslationSuccess $word and $translatedText")
+                    model.dataWithTranslation.add(Pair(word, translatedText))
+                    model.counter.decrementAndGet()
+                    debugCounterPrintln()
+                }
+
+                override fun onTranslationFailed(exception: Exception) {
+                    // it should never happen, at this product version there is no right handler for it
+                    Log.e(App.TAG, "onTranslationFailed for word $word", exception)
+                }
+
+                override fun onModelDownloaded() {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onModelDownloadFail(exception: Exception) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+        }
+
     }
 
     private inner class AddPinyinTask: IPipelineTask {
