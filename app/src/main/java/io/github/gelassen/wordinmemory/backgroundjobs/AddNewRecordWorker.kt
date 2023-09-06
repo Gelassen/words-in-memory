@@ -63,7 +63,8 @@ class AddNewRecordWorker(
         val record = inputData.getString(Builder.EXTRA_TO_TRANSLATE_RECORD)!!
         withContext(backgroundDispatcher) {
             splitSentenceIntoWords(record)
-            translate()
+            TranslateTask().process()
+//            translate()
             AddPinyinTask().process()
 //            extendWithPinyin()
             StorageTask().process()
@@ -123,6 +124,7 @@ class AddNewRecordWorker(
         model.errors.plus(errorMsg)
     }
 
+    @Deprecated(message = "Use TranslateTask class instead")
     private fun translate() {
         processWordsInQueue()
     }
@@ -225,6 +227,22 @@ class AddNewRecordWorker(
 
     private fun debugCounterPrintln() {
         Log.d(App.TAG, "Counter number ${model.counter.get()}")
+    }
+
+    private inner class TranslateTask: IPipelineTask {
+
+        override suspend fun process(): IPipelineTask {
+            while (isTaskTwoFinished()) {
+                Log.d(App.TAG, "processWordsInQueue inner loop")
+                Thread.sleep(1000)
+                if (model.dataByWords.isEmpty()) {
+                    continue
+                } else {
+                    translate(model.dataByWords.poll()!!)
+                }
+            }
+            return this
+        }
     }
 
     private inner class AddPinyinTask: IPipelineTask {

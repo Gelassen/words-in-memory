@@ -44,7 +44,7 @@
         <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
 
         <activity
-            android:name="io.github.gelassen.wordinmemory.ui.MainActivity"
+            android:name="io.github.gelassen.wordinmemory.ui.TestActivity"
             android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>
