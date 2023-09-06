@@ -6,6 +6,7 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.BuildConfig
 import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker.Companion.NON_INITIALISED
 import io.github.gelassen.wordinmemory.backgroundjobs.pipline.IPipelineTask
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import name.pilgr.pipinyin.PiPinyin
 import java.lang.Exception
+import java.lang.IllegalStateException
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
@@ -26,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger
 data class Model(
     var dataByWords: Queue<String> = ConcurrentLinkedQueue(),
     var dataWithTranslation: Queue<Pair<String, String>> = ConcurrentLinkedQueue(),
-    var dataset: List<Pair<String, String>> = mutableListOf(),
+    var dataset: MutableList<Pair<String, String>> = mutableListOf(),
     var errors: List<String> = mutableListOf(),
     val counter: AtomicInteger = AtomicInteger(NON_INITIALISED)
 )
@@ -59,7 +61,13 @@ class AddNewRecordWorker(
 
     override suspend fun doWork(): Result {
         val record = inputData.getString(Builder.EXTRA_TO_TRANSLATE_RECORD)!!
-        val pipeline = mutableListOf(WordSegmentationTask(record), TranslateTask(), AddPinyinTask(), StorageTask())
+        val pipeline = mutableListOf( /* the order of tasks in the pipeline is matter */
+            WordSegmentationTask(record),
+            TranslateTask(),
+            AddPinyinTask(),
+            PostProcessDataTask(record),
+            StorageTask()
+        )
         withContext(backgroundDispatcher) {
             for (task in pipeline) {
                 task.process()
@@ -68,8 +76,7 @@ class AddNewRecordWorker(
         return result
     }
 
-    // TODO 1. add a whole sentence with pinyin and translation in storage too
-    //  2. cleanup dataset to save from redundant records, e.g. commas
+    // FIXME add a sentence at first to be translated and extended with pinyin first
     // FIXME close translator and pinyin classes, check for others leaks
 
     private fun initiateCounter() {
@@ -206,12 +213,53 @@ class AddNewRecordWorker(
                     model.dataset = model.dataWithTranslation.map { it ->
                         val pinyin = piPinyin.toPinyin(it.first, " ")
                         Pair("%s / %s".format(it.first, pinyin), it.second)
-                    }
+                    }.toMutableList()
                     Log.d(App.TAG, "Extend translation with pinyin ${model.dataset}")
                     model.counter.decrementAndGet()
                 }
             }
             return this
+        }
+
+    }
+
+    private inner class PostProcessDataTask(val record: String): IPipelineTask {
+
+        private var forbiddenSymbols: List<String> = mutableListOf<String>("", " ", ",", ", ")
+
+        override suspend fun process(): IPipelineTask {
+            cleanup()
+            addSentenceAsWhole()
+            return this
+        }
+
+        private fun cleanup() {
+            model.dataset = model.dataset.filter { it -> !forbiddenSymbols.contains(it.second) }.toMutableList()
+        }
+
+        private fun addSentenceAsWhole() {
+            val originSentence = record
+            var originSentencePinyin = ""
+            var originSentenceTranslation = ""
+            for (item in model.dataset) {
+                val originAndPinyin = item.first.trim().split("/")
+                if (originAndPinyin.size != 2) {
+                    val errorMsg = "PostProcessDataTask() find not expected origin hanzi&pinyin pair: ${item.first} / ${item.second}"
+                    if (BuildConfig.DEBUG) {
+                        throw IllegalStateException(errorMsg)
+                    } else {
+                        Log.e(App.TAG, errorMsg)
+                    }
+                } else {
+                    originSentencePinyin = originSentencePinyin.plus(originAndPinyin.last())
+                }
+                originSentenceTranslation = originSentenceTranslation.plus(item.second).plus(" ")
+            }
+            model.dataset.add(
+                Pair(
+                    "%s / %s".format(originSentence, originSentencePinyin),
+                    originSentenceTranslation)
+            )
         }
 
     }
