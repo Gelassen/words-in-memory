@@ -6,6 +6,9 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker.Companion.NON_INITIALISED
+import io.github.gelassen.wordinmemory.backgroundjobs.pipline.IPipeline
+import io.github.gelassen.wordinmemory.backgroundjobs.pipline.IPipelineTask
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.network.Response
@@ -18,6 +21,7 @@ import name.pilgr.pipinyin.PiPinyin
 import java.lang.Exception
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 data class Model(
@@ -25,7 +29,7 @@ data class Model(
     var dataWithTranslation: Queue<Pair<String, String>> = ConcurrentLinkedQueue(),
     var dataset: List<Pair<String, String>> = mutableListOf(),
     var errors: List<String> = mutableListOf(),
-    val counter: AtomicInteger = AtomicInteger(0)
+    val counter: AtomicInteger = AtomicInteger(NON_INITIALISED)
 )
 class AddNewRecordWorker(
     val context: Context,
@@ -47,6 +51,7 @@ class AddNewRecordWorker(
 
     companion object {
         const val EXTRA_OPERATIONS_COUNT = 2
+        const val NON_INITIALISED = -1
     }
 
     private val piPinyin = PiPinyin(context)
@@ -64,13 +69,27 @@ class AddNewRecordWorker(
         return result
     }
 
-    //TODO consider to refactor into classes
+    // FIXME wait for translation model download has been finished
+    // TODO consider to refactor into classes
+    // TODO 1. add a whole sentence with pinyin and translation
+    //  2. cleanup dataset to save from redundant records, e.g. commas
     private suspend fun splitSentenceIntoWords(record: String) {
         Log.d(App.TAG, "[part 1] addNewRecord::splitSentenceIntoWords")
-        val response = networkRepository.splitChineseSentenceIntoWords(record)
-        when (response) {
-            is Response.Data -> { processResponse(response) }
-            is Response.Error -> { processErrorResponse(response) }
+        var isFinished: AtomicBoolean = AtomicBoolean(false)
+        while (thereIsStillWork() && !isFinished.get()) {
+            Log.d(App.TAG, "splitSentenceIntoWords inner loop. translator.isTranslationModelReady() ${translator.isTranslationModelReady()}")
+            Thread.sleep(1000)
+            // translation model will be required on the next step, but it would be better to wait it readiness here
+            if (translator.isTranslationModelReady()) {
+                isFinished.set(true)
+                val response = networkRepository.splitChineseSentenceIntoWords(record)
+                when (response) {
+                    is Response.Data -> { processResponse(response) }
+                    is Response.Error -> { processErrorResponse(response) }
+                }
+            } else {
+                continue
+            }
         }
     }
 
@@ -107,7 +126,7 @@ class AddNewRecordWorker(
     }
 
     private fun processWordsInQueue() {
-        while (isTaskOneFinished()) {
+        while (isTaskTwoFinished()) {
             Log.d(App.TAG, "processWordsInQueue inner loop")
             Thread.sleep(1000)
             if (model.dataByWords.isEmpty()) {
@@ -148,9 +167,9 @@ class AddNewRecordWorker(
     private fun extendWithPinyin() {
         Log.d(App.TAG, "[part 3] addNewRecord::extendWithPinyin")
         debugCounterPrintln()
-        while (isTaskTwoFinished()) {
+        while (isTaskThreeFinished()) {
             Thread.sleep(1000)
-            if (isTaskOneFinished()) {
+            if (isTaskTwoFinished()) {
                 continue
             } else {
                 debugCounterPrintln()
@@ -165,12 +184,13 @@ class AddNewRecordWorker(
         }
     }
 
+    @Deprecated(message = "Use StorageTask with IPipeline interface")
     private suspend fun save() {
         Log.d(App.TAG, "[part 4] addNewRecord::save")
         debugCounterPrintln()
         while (thereIsStillWork()) {
             Thread.sleep(1000)
-            if (isTaskTwoFinished()) {
+            if (isTaskThreeFinished()) {
                 continue
             } else {
                 val toDomainObjects = model.dataset.map { it -> SubjectToStudy(toTranslate = it.first, translation = it.second) }
@@ -192,15 +212,39 @@ class AddNewRecordWorker(
         return model.counter.get() != 0
     }
 
-    private fun isTaskOneFinished(): Boolean {
+    private fun isTaskTwoFinished(): Boolean {
         return model.counter.get() != EXTRA_OPERATIONS_COUNT
     }
 
-    private fun isTaskTwoFinished(): Boolean {
+    private fun isTaskThreeFinished(): Boolean {
         return model.counter.get() != EXTRA_OPERATIONS_COUNT.minus(1)
     }
 
     private fun debugCounterPrintln() {
         Log.d(App.TAG, "Counter number ${model.counter.get()}")
+    }
+
+    private inner class StorageTask: IPipelineTask {
+        override suspend fun process(): IPipelineTask {
+            Log.d(App.TAG, "[part 4] addNewRecord::save")
+            debugCounterPrintln()
+            while (thereIsStillWork()) {
+                Thread.sleep(1000)
+                if (isTaskThreeFinished()) {
+                    continue
+                } else {
+                    val toDomainObjects = model.dataset.map { it -> SubjectToStudy(toTranslate = it.first, translation = it.second) }
+                    Log.d(App.TAG, "Data to save ${toDomainObjects}")
+                    withContext(backgroundDispatcher) {
+                        storageRepository.saveSubject(*toDomainObjects.map { it }.toTypedArray())
+                    }
+                    result = Result.success()
+                    model.counter.decrementAndGet()
+                }
+
+            }
+            return this
+        }
+
     }
 }

@@ -17,7 +17,8 @@ open class PlainTranslator(listener: ITranslationListener?) {
         fun onModelDownloadFail(exception: Exception)
     }
 
-    var chineseToEnglishTranslator: Translator
+    private var chineseToEnglishTranslator: Translator
+    private var isTranslationModelReady: Boolean = false
 
     init {
         val options = TranslatorOptions.Builder()
@@ -28,12 +29,19 @@ open class PlainTranslator(listener: ITranslationListener?) {
         prepare(listener)
     }
 
+    fun isTranslationModelReady(): Boolean {
+        return isTranslationModelReady
+    }
+
     fun prepare(listener: ITranslationListener?) {
         val conditions = DownloadConditions.Builder()
             .requireWifi()
             .build()
         chineseToEnglishTranslator.downloadModelIfNeeded(conditions)
-            .addOnSuccessListener { listener?.onModelDownloaded() }
+            .addOnSuccessListener {
+                isTranslationModelReady = true
+                listener?.onModelDownloaded()
+            }
             .addOnFailureListener { exception -> listener?.onModelDownloadFail(exception)}
     }
 
