@@ -5,8 +5,14 @@ import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.network.Response
@@ -21,6 +27,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,7 +51,6 @@ data class Model(
 class NewRecordViewModel
     @Inject constructor(
         val app: Application,
-        val networkRepository: NetworkRepository,
         val storageRepository: StorageRepository,
         val translator: PlainTranslator
     )
@@ -55,7 +62,6 @@ class NewRecordViewModel
         .stateIn(viewModelScope, SharingStarted.Eagerly, state.value)
 
     private val validator = Validator()
-    val piPinyin = PiPinyin(app)
 
     val wordToTranslate: ObservableField<String> = ObservableField<String>("")
 
@@ -67,42 +73,32 @@ class NewRecordViewModel
 
     fun start() {
         viewModelScope.launch {
-//            async { splitSentenceIntoWords() }
-            // TODO refactor all code into a single background task -- all evaluations should go
-            //  into background thread and current final solution became unnecessarily complicated
-            // FIXME async block doesn't spawn a thread and doesn't guarantee order of execution
-            splitSentenceIntoWords()
-            getTranslationForEachWord()
-            addPinyinAndSave()
-        }
-    }
-
-    private fun addPinyinAndSave() {
-        viewModelScope.launch {
-            while(true) {
-                delay(1000L)
-                if (state.value.sentenceInWordsWithTranslation.isEmpty()) {
-                    continue
-                } else {
-                    async { doAddPinyinAndSave() }
+            // TODO add validation for input data
+            val text = wordToTranslate.get()!!
+            val workManager = WorkManager.getInstance(app)
+            val workRequest = workManager.getWorkRequest<AddNewRecordWorker>(AddNewRecordWorker.Builder.build(text))
+            workManager.enqueue(workRequest)
+            workManager
+                .getWorkInfoByIdLiveData(workRequest.id)
+                .asFlow()
+                .onStart { state.update { state -> state.copy(isLoading = false) } }
+                .onCompletion { state.update { state -> state.copy(isLoading = false) } }
+                .collect {
+                    when(it.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            Log.d(App.TAG, "AddNewRecordWorker is succeed")
+//                            val msg = app.getString(R.string.msg_database_backup_ok)
+//                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
+                        }
+                        WorkInfo.State.FAILED -> {
+                            Log.d(App.TAG, "AddNewRecordWorker is failed")
+//                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
+//                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
+                        }
+                        else -> { Log.d(App.TAG, "[${workRequest.javaClass.simpleName}] unexpected state on collect with state $it") }
+                    }
                 }
-            }
         }
-    }
-
-    private suspend fun doAddPinyinAndSave() {
-        Log.d(App.TAG, "Going to call piPinyin.toPinyin() translation")
-//                        val piPinyin = PiPinyin(app)
-        val originWordWithTranslation = state.value.sentenceInWordsWithTranslation.poll()!!
-        val pinyin = piPinyin.toPinyin(originWordWithTranslation.first, " ")
-        piPinyin.recycle()
-        Log.d(App.TAG, "Going to save subject ${originWordWithTranslation.first} and pinyin ${pinyin}")
-        storageRepository.saveSubject(
-            SubjectToStudy(
-                toTranslate = "%s / %s".format(originWordWithTranslation.first, pinyin),
-                translation = originWordWithTranslation.second
-            )
-        )
     }
 
     fun addItem() {
@@ -139,94 +135,6 @@ class NewRecordViewModel
             wordToTranslate.set("")
             translation.set("")
         }
-    }
-
-    private fun getTranslationForEachWord() {
-        Log.d(App.TAG, "[2]. getTranslationForEachWord()")
-        processWordsInQueue()
-    }
-
-    private fun processWordsInQueue() {
-        viewModelScope.launch {
-            while(true) {
-                delay(1000L)
-                if (state.value.sentenceInWordsForTranslation.isEmpty()) {
-                    continue
-                } else {
-                    async { translate(state.value.sentenceInWordsForTranslation.poll()!!) }
-                }
-            }
-        }
-    }
-
-    private fun translate(word: String) {
-        translator.translateChineseText(word, object: PlainTranslator.ITranslationListener {
-            override fun onTranslationSuccess(translatedText: String) {
-                state.update { state ->
-                    val newList = ConcurrentLinkedQueue(state.sentenceInWordsWithTranslation)
-                    newList.add(Pair(word, translatedText))
-                    state.copy(sentenceInWordsWithTranslation = newList)
-                }
-                Log.d(App.TAG, "Model state after translation feedback trigger ${state.value}")
-            }
-
-            override fun onTranslationFailed(exception: Exception) {
-                // it should never happen, at this product version there is no right handler for it
-                Log.e(App.TAG, "onTranslationFailed for word $word", exception)
-            }
-
-            override fun onModelDownloaded() {
-                TODO("Not yet implemented")
-            }
-
-            override fun onModelDownloadFail(exception: Exception) {
-                TODO("Not yet implemented")
-            }
-
-        } )
-    }
-
-    private fun splitSentenceIntoWords() {
-        viewModelScope.launch {
-            Log.d(App.TAG, "[1]. splitSentenceIntoWords()")
-            Log.d(App.TAG, "wordToTranslate ${wordToTranslate.get()}")
-            if (wordToTranslate.get()!!.isEmpty()) {
-                state.update { state -> state.copy(errors = state.errors.plus("Translation field should not be empty. Please enter text on Chinese"))}
-                return@launch
-            }
-            val response = networkRepository.splitChineseSentenceIntoWords(wordToTranslate.get()!!)
-            when (response) {
-                is Response.Data -> { processResponse(response) }
-                is Response.Error -> { processErrorResponse(response) }
-            }
-        }
-    }
-
-    private fun processResponse(response: Response.Data<List<List<String>>>) {
-        if (isNotValidResponse(response)) {
-            val errorMsg = "Received data from backend either empty or has more than one record"
-            state.update { state -> state.copy(isLoading = false, errors = state.errors.plus(errorMsg)) }
-        } else {
-            val data = ConcurrentLinkedQueue<String>()//mutableListOf<Pair<String, String>>()
-            for (item in response.data.get(0)) {
-                data.add(item) // sentence is split to words, but not translated yet; live translation as empty string ""
-            }
-            state.update { state -> state.copy(isLoading = false, sentenceInWordsForTranslation = data) }
-        }
-    }
-
-    private fun isNotValidResponse(response: Response.Data<List<List<String>>>): Boolean {
-        return response.data.isEmpty()
-                || response.data.get(0).isEmpty()
-                || response.data.size > 1
-    }
-
-    private fun processErrorResponse(response: Response.Error) {
-        val errorMsg = when (response) {
-            is Response.Error.Message -> { response.msg }
-            is Response.Error.Exception -> { "Failed to classify text with error" }
-        }
-        state.update { state -> state.copy(isLoading = false, errors = state.errors.plus(errorMsg)) }
     }
 
     private fun addError(msg: String) {

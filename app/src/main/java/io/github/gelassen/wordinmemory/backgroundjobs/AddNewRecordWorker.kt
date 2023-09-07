@@ -88,6 +88,10 @@ class AddNewRecordWorker(
         return model.counter.get() != 0
     }
 
+    /**
+     * First task does not require extra checks, so there is no similar method. However it is
+     * good to preserve order in names to avoid cognitive mess with terms.
+     * */
     private fun isTaskTwoFinished(): Boolean {
         return model.counter.get() != EXTRA_OPERATIONS_COUNT
     }
@@ -133,8 +137,17 @@ class AddNewRecordWorker(
                     data.add(item) // sentence is split to words, but not translated yet; live translation as empty string ""
                 }
                 model.dataByWords = data
+                addWholeRecordAsExtraWord()
                 initiateCounter()
             }
+        }
+
+        /**
+         * In case of sentence in record, it would be good to have in vocabulary to. The best way so
+         * far is to add it into dataset at the beginning of the pipeline
+         * */
+        private fun addWholeRecordAsExtraWord() {
+            model.dataByWords.add(record)
         }
 
         private fun isNotValidResponse(response: Response.Data<List<List<String>>>): Boolean {
@@ -229,7 +242,6 @@ class AddNewRecordWorker(
 
         override suspend fun process(): IPipelineTask {
             cleanup()
-            addSentenceAsWhole()
             return this
         }
 
@@ -237,6 +249,8 @@ class AddNewRecordWorker(
             model.dataset = model.dataset.filter { it -> !forbiddenSymbols.contains(it.second) }.toMutableList()
         }
 
+        @Deprecated("An origin record has been added into dataset at the beginning of the " +
+                "pipeline. This method has been obsolete.")
         private fun addSentenceAsWhole() {
             val originSentence = record
             var originSentencePinyin = ""

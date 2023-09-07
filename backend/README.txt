@@ -12,6 +12,8 @@ Run via docker: (takes ~6 GB, plus 400 MB for downloaded pytorch model; on speci
 1. $ docker image build -t wim-backend .
 2. $ docker run -d --name wim-backend-container -p 80:80 --net host wim-backend
 
+(all next container launches are done via command $ docker container start wim-backend-container)
+
 Command for test deployment: 
 
 $ curl --header "Content-Type: application/json"   --request POST   --data '{"text" : "之后你看看了我的出版请告诉我你认为什么"}' http://127.0.0.1:8000/classify
