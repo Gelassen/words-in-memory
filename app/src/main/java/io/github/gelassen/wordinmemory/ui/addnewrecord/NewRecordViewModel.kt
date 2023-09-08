@@ -4,25 +4,19 @@ import android.app.Application
 import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asFlow
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.backgroundjobs.AddNewRecordWorker
+import io.github.gelassen.wordinmemory.backgroundjobs.BaseWorker
 import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
-import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
-import io.github.gelassen.wordinmemory.network.Response
-import io.github.gelassen.wordinmemory.repository.NetworkRepository
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.ui.dashboard.StateFlag
 import io.github.gelassen.wordinmemory.utils.Validator
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,8 +26,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import name.pilgr.pipinyin.PiPinyin
-import java.lang.Exception
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
@@ -51,8 +43,7 @@ data class Model(
 class NewRecordViewModel
     @Inject constructor(
         val app: Application,
-        val storageRepository: StorageRepository,
-        val translator: PlainTranslator
+        val storageRepository: StorageRepository
     )
         : AndroidViewModel(app) {
 
@@ -67,13 +58,12 @@ class NewRecordViewModel
 
     val translation: ObservableField<String> = ObservableField<String>("")
 
-    fun manageAutoClose(lifecycleOwner: LifecycleOwner) {
-        translator.manageAutoClose(lifecycleOwner)
-    }
-
     fun start() {
         viewModelScope.launch {
-            // TODO add validation for input data
+            if (!validator.isAllowedWordOrSentence(wordToTranslate.get()!!)) {
+                addError(app.getString(R.string.msg_error_not_valid_new_record))
+                return@launch
+            }
             val text = wordToTranslate.get()!!
             val workManager = WorkManager.getInstance(app)
             val workRequest = workManager.getWorkRequest<AddNewRecordWorker>(AddNewRecordWorker.Builder.build(text))
@@ -87,13 +77,13 @@ class NewRecordViewModel
                     when(it.state) {
                         WorkInfo.State.SUCCEEDED -> {
                             Log.d(App.TAG, "AddNewRecordWorker is succeed")
-//                            val msg = app.getString(R.string.msg_database_backup_ok)
-//                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
+                            val msg = app.getString(R.string.msg_database_backup_ok)
+                            state.update { state -> state.copy(messages = state.messages.plus(msg)) }
                         }
                         WorkInfo.State.FAILED -> {
                             Log.d(App.TAG, "AddNewRecordWorker is failed")
-//                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
-//                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
+                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
+                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
                         }
                         else -> { Log.d(App.TAG, "[${workRequest.javaClass.simpleName}] unexpected state on collect with state $it") }
                     }
@@ -140,6 +130,12 @@ class NewRecordViewModel
     private fun addError(msg: String) {
         state.update { state ->
             state.copy(errors = state.errors.plus(msg))
+        }
+    }
+
+    fun removeError(errorMsg: String) {
+        state.update { state ->
+            state.copy(errors = state.errors.filter { it != errorMsg })
         }
     }
 

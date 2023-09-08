@@ -2,6 +2,7 @@ package io.github.gelassen.wordinmemory.backgroundjobs
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -29,7 +30,6 @@ data class Model(
     var dataByWords: Queue<String> = ConcurrentLinkedQueue(),
     var dataWithTranslation: Queue<Pair<String, String>> = ConcurrentLinkedQueue(),
     var dataset: MutableList<Pair<String, String>> = mutableListOf(),
-    var errors: List<String> = mutableListOf(),
     val counter: AtomicInteger = AtomicInteger(NON_INITIALISED)
 )
 class AddNewRecordWorker(
@@ -59,6 +59,11 @@ class AddNewRecordWorker(
     private val model = Model()
     private var result = Result.failure()
 
+    private fun disposeResources() {
+        piPinyin.recycle()
+        translator.close()
+    }
+
     override suspend fun doWork(): Result {
         val record = inputData.getString(Builder.EXTRA_TO_TRANSLATE_RECORD)!!
         val pipeline = mutableListOf( /* the order of tasks in the pipeline is matter */
@@ -73,11 +78,9 @@ class AddNewRecordWorker(
                 task.process()
             }
         }
+        disposeResources()
         return result
     }
-
-    // FIXME add a sentence at first to be translated and extended with pinyin first
-    // FIXME close translator and pinyin classes, check for others leaks
 
     private fun initiateCounter() {
         model.counter.set(model.dataByWords.size + EXTRA_OPERATIONS_COUNT)
@@ -130,7 +133,8 @@ class AddNewRecordWorker(
         private fun processResponse(response: Response.Data<List<List<String>>>) {
             if (isNotValidResponse(response)) {
                 val errorMsg = "Received data from backend either empty or has more than one record"
-                model.errors.plus(errorMsg)
+                val outputData = workDataOf(Consts.KEY_ERROR_MSG to errorMsg)
+                result = Result.failure(outputData)
             } else {
                 val data = ConcurrentLinkedQueue<String>()//mutableListOf<Pair<String, String>>()
                 for (item in response.data.get(0)) {
@@ -161,7 +165,8 @@ class AddNewRecordWorker(
                 is Response.Error.Message -> { response.msg }
                 is Response.Error.Exception -> { "Failed to classify text with error" }
             }
-            model.errors.plus(errorMsg)
+            val outputData = workDataOf(Consts.KEY_ERROR_MSG to errorMsg)
+            result = Result.failure(outputData)
         }
 
     }

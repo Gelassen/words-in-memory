@@ -6,6 +6,8 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
+import io.github.gelassen.wordinmemory.BuildConfig
+import okhttp3.internal.closeQuietly
 import java.lang.Exception
 
 open class PlainTranslator(listener: ITranslationListener?) {
@@ -56,5 +58,13 @@ open class PlainTranslator(listener: ITranslationListener?) {
      * */
     fun manageAutoClose(lifecycle: LifecycleOwner) {
         lifecycle.lifecycle.addObserver(chineseToEnglishTranslator)
+    }
+
+    fun close() {
+        if (BuildConfig.DEBUG) {
+            chineseToEnglishTranslator.close()
+        } else {
+            chineseToEnglishTranslator.closeQuietly()
+        }
     }
 }

@@ -17,6 +17,8 @@
 
     <!-- system messages -->
     <string name="msg_database_backup_ok">Your vocabulary has been exported into a separate file on the SD card.</string>
+    <string name="msg_new_record_ok">New record has been added</string>
+    <string name="msg_error_not_valid_new_record">New record should not be empty. Have you entered a record on Chinese?</string>
 
     <!-- dialogs -->
     <string name="dialog_add_new_tem_title">Add new word</string>

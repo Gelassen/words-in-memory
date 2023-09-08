@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.AppApplication
@@ -25,8 +27,7 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
-//    lateinit var viewModel: DashboardViewModel
-    lateinit var viewModelNew: NewRecordViewModel
+    lateinit var viewModel: NewRecordViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,11 +41,9 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
     ): View? {
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
 //        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(DashboardViewModel::class.java)
-        viewModelNew = ViewModelProvider(requireActivity(), viewModelFactory).get(NewRecordViewModel::class.java)
-        // FIXME find out alternative way to close a translator when work would be completed
-        /*viewModelNew.manageAutoClose(this)*/
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory).get(NewRecordViewModel::class.java)
         binding = AddItemFragmentBinding.inflate(inflater, container, false)
-        binding.model = viewModelNew
+        binding.model = viewModel
         binding.withBackend = isWithExperimentalFeatureSupport()
         return binding.root
     }
@@ -55,20 +54,30 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
         if (!requireArguments().isEmpty
             && requireArguments().containsKey(EXTRA_DATA)) {
             val data = requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)
-            viewModelNew.wordToTranslate.set(data?.toTranslate)
-            viewModelNew.translation.set(data?.translation)
+            viewModel.wordToTranslate.set(data?.toTranslate)
+            viewModel.translation.set(data?.translation)
+        }
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.uiState.collect {
+                if (it.errors.isNotEmpty()) {
+                    Toast.makeText(requireContext(), it.errors.first(), Toast.LENGTH_SHORT)
+                        .show()
+                    viewModel.removeError(it.errors.first())
+                }
+            }
         }
 
         binding.save.setOnClickListener {
-            Log.d(App.TAG, "${viewModelNew.wordToTranslate.get()}")
+            Log.d(App.TAG, "${viewModel.wordToTranslate.get()}")
             if (requireArguments().isEmpty) {
                 if (isWithExperimentalFeatureSupport()) {
-                    viewModelNew.start()
+                    viewModel.start()
                 } else {
-                    viewModelNew.addItem()
+                    viewModel.addItem()
                 }
             } else {
-                viewModelNew.updateItem(requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)!!)
+                viewModel.updateItem(requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)!!)
             }
             dismiss()
         }
