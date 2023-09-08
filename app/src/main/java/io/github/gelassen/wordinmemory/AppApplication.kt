@@ -46,11 +46,11 @@ class AppApplication: Application(), Configuration.Provider {
     private fun turnOnNetworkStrictPolicy() {
         StrictMode.setThreadPolicy(
             ThreadPolicy.Builder()
-//                .detectDiskReads()
-//                .detectDiskWrites()
+                .detectDiskReads()
+                .detectDiskWrites()
                 .detectNetwork() // or .detectAll() for all detectable problems
                 .penaltyLog()
-                .penaltyDeath()
+//                .penaltyDeath()
                 .build()
         )
     }

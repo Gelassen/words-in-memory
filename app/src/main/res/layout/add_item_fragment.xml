@@ -10,6 +10,9 @@
             name="withBackend"
             type="Boolean" />
         <variable
+            name="isOnEdit"
+            type="Boolean" />
+        <variable
             name="provider"
             type="io.github.gelassen.wordinmemory.providers.DashboardProvider" />
         <variable
@@ -57,7 +60,7 @@
             android:backgroundTint="@color/blue_light"
             android:hint="@string/translation_field"
             android:singleLine="true"
-            android:visibility="@{withBackend ? View.GONE : View.VISIBLE}"
+            android:visibility="@{isOnEdit || !withBackend ? View.VISIBLE : View.GONE}"
             android:text="@={model.translation}" />
 
 <!--        <io.github.gelassen.wordinmemory.GroupChoiceView

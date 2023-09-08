@@ -50,10 +50,22 @@ class AddItemDialogFragment: DialogFragment() {
         viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory)
             .get(NewRecordViewModel::class.java)
         binding = AddItemFragmentBinding.inflate(LayoutInflater.from(context))
+        binding.withBackend = isWithExperimentalFeatureSupport()
         binding.model = viewModel
         binding.title.visibility = View.VISIBLE
+        binding.isOnEdit = false
         binding.save.setOnClickListener {
-            viewModel.addItem()
+            if (requireArguments().isEmpty) {
+                if (isWithExperimentalFeatureSupport()) {
+                    viewModel.start()
+                } else {
+                    viewModel.addItem()
+                }
+            } else {
+                viewModel.updateItem(requireArguments().getParcelable<SubjectToStudy>(
+                    AddItemBottomSheetDialogFragment.EXTRA_DATA
+                )!!)
+            }
             dismiss()
         }
         preSetIfNecessary()
@@ -67,7 +79,12 @@ class AddItemDialogFragment: DialogFragment() {
             val data = requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)!!
             viewModel.wordToTranslate.set(data.toTranslate)
             viewModel.translation.set(data.translation)
+            binding.isOnEdit = true
         }
+    }
+
+    private fun isWithExperimentalFeatureSupport(): Boolean {
+        return resources.getBoolean(R.bool.with_backend)
     }
 
 }

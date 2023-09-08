@@ -45,6 +45,7 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
         binding = AddItemFragmentBinding.inflate(inflater, container, false)
         binding.model = viewModel
         binding.withBackend = isWithExperimentalFeatureSupport()
+        binding.isOnEdit = false
         return binding.root
     }
 
@@ -56,6 +57,7 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
             val data = requireArguments().getParcelable<SubjectToStudy>(EXTRA_DATA)
             viewModel.wordToTranslate.set(data?.toTranslate)
             viewModel.translation.set(data?.translation)
+            binding.isOnEdit = true
         }
 
         lifecycleScope.launchWhenStarted {
