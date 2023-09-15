@@ -1,6 +1,8 @@
 package io.github.gelassen.wordinmemory.providers
 
 import android.text.format.DateUtils
+import android.util.Log
+import io.github.gelassen.wordinmemory.App
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -11,9 +13,11 @@ class DashboardProvider {
     }
 
     fun isTimeToShowDailyTraining(lastShownTime: Long, currentTime: Long) : Boolean {
-        if (currentTime < lastShownTime) return true // it shouldn't happened, just protect function from occasional garbage
+        Log.d(App.TAG, "isTimeToShowDailyTraining()")
+/*        if (currentTime < lastShownTime) return true // it shouldn't happened, just protect function from occasional garbage
         // TODO consider to use lastShownTime.seconds.toComponents {}
-        return !DateUtils.isToday(lastShownTime)
+        return !DateUtils.isToday(lastShownTime)*/
+        return true
     }
 
     fun getLegacyDateDifference(fromDate: String, toDate: String,

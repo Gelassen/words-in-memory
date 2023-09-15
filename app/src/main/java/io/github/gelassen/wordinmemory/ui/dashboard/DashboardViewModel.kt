@@ -19,7 +19,6 @@ import io.github.gelassen.wordinmemory.backgroundjobs.getWorkRequest
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
-import io.github.gelassen.wordinmemory.ui.tutoring.BaseTutoringFragment
 import io.github.gelassen.wordinmemory.utils.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,7 +38,9 @@ data class Model(
 
 enum class StateFlag {
     NONE,
-    DATA
+    DATA,
+    TUTORING_PART_ONE,
+    TUTORING_PART_TWO
 }
 
 class DashboardViewModel
@@ -231,6 +232,7 @@ class DashboardViewModel
         val itemsForPracticeAmount = 10
         filterRequestJob?.cancel()
         filterRequestJob = viewModelScope.launch {
+            Log.d(App.TAG, "${this.javaClass.simpleName} showDailyPractice()::viewModelScope.launch {}")
             storageRepository
                 .getNonCompleteSubjectsOnly()
                 .cancellable()
@@ -240,7 +242,7 @@ class DashboardViewModel
                 .collect { it ->
                     Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
                     state.update { state ->
-                        state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.DATA)
+                        state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.TUTORING_PART_ONE)
                     }
                 }
         }
@@ -263,12 +265,16 @@ class DashboardViewModel
                 .cancellable()
                 .map { it -> it.sortedBy { item -> item.tutorCounter } }
                 .map { it -> revertBackTranslationAndSubjectToTranslate(it) }
+/*                .map { it ->
+                    it.map { it -> it.isCompleted = false };
+                    it
+                }*/
                 /*.take(itemsForPracticeAmount)*/
                 .flowOn(Dispatchers.IO)
                 .collect { it ->
                     Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
                     state.update { state ->
-                        state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.DATA)
+                        state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.TUTORING_PART_TWO)
                     }
                 }
         }
@@ -300,18 +306,25 @@ class DashboardViewModel
     }
 
     private fun revertBackTranslationAndSubjectToTranslate(dataset: List<SubjectToStudy>): List<SubjectToStudy> {
-        return dataset.map { it ->
+        val data = dataset.map { it ->
             val tmp = it.translation
             it.translation = it.toTranslate
             it.toTranslate = tmp
             it
         }
+        return data
     }
 
-    fun shallSkipTutoringScreen(): Boolean {
-        // we have to add counter, because at first we always receive model's default state
-        state.update { state -> state.copy(counter = state.counter.plus(1)) }
-        return state.value.counter >= MAX_COUNTER && state.value.data.isEmpty()
+    fun shallSkipPartOneTutoringScreen(): Boolean {
+/*        // we have to add counter, because at first we always receive model's default state
+        state.update { state -> state.copy(counter = state.counter.plus(1)) }*/
+        return state.value.status == StateFlag.TUTORING_PART_ONE
+                && state.value.data.isEmpty()
+    }
+
+    fun shallSkipPartTwoTutoringScreen(): Boolean {
+        return state.value.status == StateFlag.TUTORING_PART_TWO
+                && state.value.data.isEmpty()
     }
 
     fun areNotEnoughWordsForPractice(): Boolean {

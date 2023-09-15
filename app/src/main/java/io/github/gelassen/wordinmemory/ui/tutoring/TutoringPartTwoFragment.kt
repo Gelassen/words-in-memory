@@ -1,21 +1,14 @@
 package io.github.gelassen.wordinmemory.ui.tutoring
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
-import io.github.gelassen.wordinmemory.providers.DashboardProvider
-import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardAdapter
-import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
 
 class TutoringPartTwoFragment : BaseTutoringFragment() {
 
@@ -40,6 +33,7 @@ class TutoringPartTwoFragment : BaseTutoringFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (binding.dashboardList.adapter as DashboardAdapter).turnOnTutoring(true)
         binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 / 2")
     }
 
@@ -57,7 +51,7 @@ class TutoringPartTwoFragment : BaseTutoringFragment() {
         }
 
         listenOnModelUpdates() { dataset ->
-            if (viewModel.shallSkipTutoringScreen()
+            if (viewModel.shallSkipPartTwoTutoringScreen()
                 || viewModel.areNotEnoughWordsForPractice()) {
                 finishWork()
             }

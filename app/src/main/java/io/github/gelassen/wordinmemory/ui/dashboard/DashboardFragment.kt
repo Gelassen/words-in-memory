@@ -115,6 +115,7 @@ open class DashboardFragment: Fragment(),
             StaggeredGridLayoutManager.VERTICAL
         )
         binding.dashboardList.adapter = DashboardAdapter(this)
+        (binding.dashboardList.adapter as DashboardAdapter).turnOnTutoring(false)
         binding.dashboardAddNewWord.apply {
             setOnClickListener {
                 AddItemDialogProxy()

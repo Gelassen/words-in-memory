@@ -55,7 +55,7 @@ abstract class BaseTutoringFragment: DashboardFragment() {
          * Should be more safe way to cancel coroutines to allow continue use scope again
          * https://stackoverflow.com/a/65668544/3649629
          * */
-        viewModel.viewModelScope.coroutineContext.cancelChildren()
+//        viewModel.viewModelScope.coroutineContext.cancelChildren()
         viewModel.clearState()
         showMainScreen()
     }
