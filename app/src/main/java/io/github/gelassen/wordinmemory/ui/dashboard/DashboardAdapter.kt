@@ -24,6 +24,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
     }
 
     private val data: MutableList<SubjectToStudy> = mutableListOf()
+    private var isTutoring = false
 
     private var lastPositionForAnimation = 0
 
@@ -43,6 +44,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         prepareToTranslateClickCase(holder, selectedSubject)
         prepareResponseOnSelectionCase(holder, selectedSubject)
         prepareLongPressCase(holder, selectedSubject)
+        decorateTutoringMode(holder)
     }
 
     override fun getItemCount(): Int {
@@ -123,12 +125,30 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         })
     }
 
+    private fun decorateTutoringMode(holder: ViewHolder) {
+        val notSelectedFlag = 0
+        if (isTutoring) {
+            holder.binding.completeIcon.visibility = if (isTutoring)  View.GONE else View.VISIBLE
+            holder.binding.root.background.level = notSelectedFlag
+            holder.binding.completeIcon.background.setLevel(notSelectedFlag)
+            holder.binding.toTranslate.setTextColor(
+                holder.binding.root.context.resources.getColor(
+                    R.color.enabled_text
+                )
+            )
+        }
+    }
+
     fun updateData(newData: List<SubjectToStudy>) {
         val diffCallback = DiffUtilCallback(data, newData)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         data.clear()
         data.addAll(newData)
         diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun turnOnTutoring(turnOn: Boolean) {
+        this.isTutoring = turnOn
     }
 
     private fun setAnimation(viewToAnimate: View, pos: Int) {
