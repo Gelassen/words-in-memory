@@ -54,7 +54,7 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
 
             listenOnModelUpdates() { dataset ->
                 Log.d(App.TAG, "${this.javaClass.simpleName} listenOnModelUpdates()")
-                if (viewModel.uiState.value.status == StateFlag.TUTORING_PART_ONE) { return@listenOnModelUpdates }
+//                if (viewModel.uiState.value.status == StateFlag.TUTORING_PART_ONE) { return@listenOnModelUpdates }
                 if (viewModel.shallSkipPartOneTutoringScreen()
                     || viewModel.areNotEnoughWordsForPractice()) {
                     Log.d(App.TAG, "${this.javaClass.simpleName} completePartOneTutoring()")
@@ -73,7 +73,7 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
          * call (onDestroy() would cancel coroutines automatically) which leads to infinite invocation loop
          * */
 //        viewModel.viewModelScope.coroutineContext.cancelChildren()
-//        viewModel.clearState()
+        viewModel.clearState()
         showNextTutoringPart()
 //        showMainScreen()
     }

@@ -130,7 +130,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         if (isTutoring) {
             holder.binding.completeIcon.visibility = if (isTutoring)  View.GONE else View.VISIBLE
             holder.binding.root.background.level = notSelectedFlag
-            holder.binding.completeIcon.background.setLevel(notSelectedFlag)
+            holder.binding.completeIcon.visibility = View.GONE
             holder.binding.toTranslate.setTextColor(
                 holder.binding.root.context.resources.getColor(
                     R.color.enabled_text

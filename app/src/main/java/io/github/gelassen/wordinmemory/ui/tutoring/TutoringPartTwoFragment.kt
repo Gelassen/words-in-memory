@@ -19,8 +19,6 @@ class TutoringPartTwoFragment : BaseTutoringFragment() {
         }
     }
 
-    private var counter = 0
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,6 +33,10 @@ class TutoringPartTwoFragment : BaseTutoringFragment() {
         super.onViewCreated(view, savedInstanceState)
         (binding.dashboardList.adapter as DashboardAdapter).turnOnTutoring(true)
         binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 / 2")
+    }
+
+    override fun onLongPress(selectedSubject: SubjectToStudy) {
+        /* no ops */
     }
 
     override fun onCompleteDailyPractice(dataset: MutableList<SubjectToStudy>) {
