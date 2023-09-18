@@ -21,6 +21,5 @@ class AppQuickStorage {
     fun getLastTrainedTime(activity: Activity): Long {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         return sharedPref?.getLong(KEY_LAST_TRAINED, 0L)!!
-        return 0L
     }
 }

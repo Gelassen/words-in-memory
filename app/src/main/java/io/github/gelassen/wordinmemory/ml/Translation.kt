@@ -10,19 +10,20 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.mlkit.vision.common.InputImage
+/*import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
+import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions*/
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
 
+@Deprecated("Code is left as is for future research. Quick solution has been found by alternative approach")
 class Translation {
 
-    val recognizer = TextRecognition.getClient(
+/*    val recognizer = TextRecognition.getClient(
         ChineseTextRecognizerOptions
             .Builder()
             .build()
@@ -38,11 +39,11 @@ class Translation {
             .addOnFailureListener(failureListener)
     }
 
-    /**
+    *//**
      * Don't forget to reclaim memory y calling bitmap.recycle()
      *
      * @author https://stackoverflow.com/a/18077318/3649629
-     * */
+     * *//*
     private fun chineseTextToImage(text: String): Bitmap {
         val bounds = Rect()
         val textPaint: TextPaint = object : TextPaint() {
@@ -73,11 +74,11 @@ class Translation {
         return bmp
     }
 
-    /**
+    *//**
      * Memory-map the model file in Assets.
      *
      * @ref https://blog.tensorflow.org/2018/03/using-tensorflow-lite-on-android.html
-     * */
+     * *//*
     @Throws(IOException::class)
     private fun loadModelFile(activity: Activity): MappedByteBuffer? {
         val fileDescriptor = activity.assets.openFd(getModelPath())
@@ -90,7 +91,7 @@ class Translation {
 
     private fun getModelPath(): String {
         return ""
-    }
+    }*/
 
 
 }
