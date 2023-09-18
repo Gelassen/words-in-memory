@@ -26,7 +26,7 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 1 / 2")
+        /*binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 1 / 2")*/
     }
 
     override fun onDestroy() {

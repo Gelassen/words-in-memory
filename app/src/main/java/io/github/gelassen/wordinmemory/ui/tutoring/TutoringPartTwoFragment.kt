@@ -32,7 +32,7 @@ class TutoringPartTwoFragment : BaseTutoringFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (binding.dashboardList.adapter as DashboardAdapter).turnOnTutoring(true)
-        binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 / 2")
+        /*binding.completeText.text = getString(R.string.complete_daily_practice).plus(" 2 / 2")*/
     }
 
     override fun onLongPress(selectedSubject: SubjectToStudy) {

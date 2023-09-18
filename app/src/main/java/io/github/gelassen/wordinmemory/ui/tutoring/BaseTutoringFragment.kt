@@ -30,6 +30,7 @@ abstract class BaseTutoringFragment: DashboardFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.completeText.text = getString(R.string.complete_daily_practice)
         binding.completeDailyPractice.apply {
             setOnClickListener {
                 Log.d(App.TAG, "Click on complete daily practice")

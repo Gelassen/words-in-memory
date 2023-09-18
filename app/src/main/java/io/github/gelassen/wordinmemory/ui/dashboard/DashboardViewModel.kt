@@ -51,8 +51,6 @@ class DashboardViewModel
     : AndroidViewModel(app) {
 
     companion object {
-        const val MAX_COUNTER = 2
-
         const val REQUIRED_AMOUNT_OF_ITEMS_FOR_TUTORING = 10
     }
 
@@ -265,10 +263,6 @@ class DashboardViewModel
                 .cancellable()
                 .map { it -> it.sortedBy { item -> item.tutorCounter } }
                 .map { it -> revertBackTranslationAndSubjectToTranslate(it) }
-/*                .map { it ->
-                    it.map { it -> it.isCompleted = false };
-                    it
-                }*/
                 /*.take(itemsForPracticeAmount)*/
                 .flowOn(Dispatchers.IO)
                 .collect { it ->
@@ -316,8 +310,6 @@ class DashboardViewModel
     }
 
     fun shallSkipPartOneTutoringScreen(): Boolean {
-/*        // we have to add counter, because at first we always receive model's default state
-        state.update { state -> state.copy(counter = state.counter.plus(1)) }*/
         return state.value.status == StateFlag.TUTORING_PART_ONE
                 && state.value.data.isEmpty()
     }
