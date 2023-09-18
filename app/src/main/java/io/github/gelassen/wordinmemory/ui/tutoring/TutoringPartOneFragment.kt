@@ -10,7 +10,6 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.providers.DashboardProvider
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
-import io.github.gelassen.wordinmemory.ui.dashboard.StateFlag
 
 class TutoringPartOneFragment : BaseTutoringFragment() {
 
@@ -49,7 +48,7 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
                 currentTime = System.currentTimeMillis())) {
             lifecycleScope.launchWhenStarted {
                 Log.d(App.TAG, "${this.javaClass.simpleName} showDailyPractice()")
-                viewModel.showDailyPractice()
+                viewModel.showPartOneDailyPractice()
             }
 
             listenOnModelUpdates() { dataset ->

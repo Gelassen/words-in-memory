@@ -218,7 +218,7 @@ class DashboardViewModel
         }
     }
 
-    suspend fun showDailyPractice() {
+    suspend fun showPartOneDailyPractice() {
         /* when we show only subset based on sql query, observer doesn't respond on changes in database */
 /*        withContext(Dispatchers.IO) {
             val dailyPractice = storageRepository.getDailyPractice()
