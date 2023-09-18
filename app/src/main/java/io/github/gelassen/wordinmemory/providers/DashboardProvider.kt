@@ -14,10 +14,9 @@ class DashboardProvider {
 
     fun isTimeToShowDailyTraining(lastShownTime: Long, currentTime: Long) : Boolean {
         Log.d(App.TAG, "isTimeToShowDailyTraining()")
-/*        if (currentTime < lastShownTime) return true // it shouldn't happened, just protect function from occasional garbage
+        if (currentTime < lastShownTime) return true // it shouldn't happened, just protect function from occasional garbage
         // TODO consider to use lastShownTime.seconds.toComponents {}
-        return !DateUtils.isToday(lastShownTime)*/
-        return true
+        return !DateUtils.isToday(lastShownTime)
     }
 
     fun getLegacyDateDifference(fromDate: String, toDate: String,
