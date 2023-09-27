@@ -1,3 +1,7 @@
+# Publications
+
+<a href="https://gelassen.github.io/blog/2023/08/20/case-study-automatic-chinese-text-tokenisation-and-translation.html">Case study: automatic Chinese text word segmentation and translation</a>
+
 # Dev email address
 words.inmemory.dev@yandex.com
 
