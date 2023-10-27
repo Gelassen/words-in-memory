@@ -11,11 +11,11 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "io.github.gelassen.wordsinmemory.debug"
+        applicationId = "io.github.gelassen.wordsinmemory.beta"
         minSdk = 21
         targetSdk = 33
-        versionCode = 7
-        versionName = "1.4.1"
+        versionCode = 8
+        versionName = "1.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

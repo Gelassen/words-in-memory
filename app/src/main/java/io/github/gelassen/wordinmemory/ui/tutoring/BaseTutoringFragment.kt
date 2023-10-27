@@ -35,7 +35,8 @@ abstract class BaseTutoringFragment: DashboardFragment() {
             setOnClickListener {
                 Log.d(App.TAG, "Click on complete daily practice")
                 val dataset = (binding.dashboardList.adapter as DashboardAdapter).getDataset()
-                onCompleteDailyPractice(dataset)
+                val deepCopyDataset = buildList { addAll(dataset) }
+                onCompleteDailyPractice(deepCopyDataset.toMutableList())
             }
         }
     }

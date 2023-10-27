@@ -278,6 +278,9 @@ class DashboardViewModel
         activity: Activity,
         dataset: MutableList<SubjectToStudy>
     ) {
+        // race condition on dataset was there, deep copy solved an issue
+        // https://stackoverflow.com/questions/34697828/parallel-operations-on-kotlin-collections
+        // https://stackoverflow.com/questions/45575516/kotlin-process-collection-in-parallel
         withContext(Dispatchers.IO) {
             AppQuickStorage().saveLastTrainedTime(activity, System.currentTimeMillis())
             dataset.forEach { it.tutorCounter++ }
