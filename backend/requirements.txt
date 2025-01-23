@@ -1,5 +1,0 @@
-
-ckip-transformers
-fastapi
-uvicorn[standard]
-a2wsgi

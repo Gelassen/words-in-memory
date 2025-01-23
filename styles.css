@@ -1,0 +1,51 @@
+/* styles.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Royal blue background */
+  body {
+    background-color: #002366;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Center container */
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* Space between image and button */
+  }
+  
+  /* Image styling */
+  .smartphone-image {
+    max-width: 300px;
+    height: auto;
+  }
+  
+  /* Download button styling */
+  .download-button {
+    display: inline-block;
+    padding: 15px 25px;
+    background-color: #FFA500; /* Orange color */
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2em;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .download-button:hover {
+    background-color: #cc8400; /* Darker orange on hover */
+  }
+  
