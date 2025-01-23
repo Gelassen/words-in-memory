@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="server_ip"
+        android:title="Server IP Address"
+        android:summary="Enter the server IP address"
+        android:defaultValue="192.168.1.1"
+        android:inputType="text" />
+
+    <EditTextPreference
+        android:key="server_port"
+        android:title="Server Port"
+        android:summary="Enter the server port"
+        android:defaultValue="8080"
+        android:inputType="number" />
+</PreferenceScreen>

@@ -4,15 +4,15 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "io.github.gelassen.wordsinmemory",
+  "applicationId": "io.github.gelassen.wordsinmemory.beta",
   "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 8,
-      "versionName": "1.5.1",
+      "versionCode": 9,
+      "versionName": "1.5.2",
       "outputFile": "app-release.apk"
     }
   ],

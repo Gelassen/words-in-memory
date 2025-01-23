@@ -53,6 +53,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.preferences.SettingsActivity" />
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
