@@ -1,12 +1,26 @@
 package io.github.gelassen.wordinmemory.providers
 
+import android.app.Activity
 import android.text.format.DateUtils
 import android.util.Log
 import io.github.gelassen.wordinmemory.App
+import io.github.gelassen.wordinmemory.storage.AppQuickStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class DashboardProvider {
+class DashboardProvider() {
+
+    val TURN_ON_EXTENDED_MODE_THRESHOLD = 10
+
+    var currentClicksCountUntilExtendedMode = 0
+
+    fun isExtendedModeReady(): Boolean {
+        currentClicksCountUntilExtendedMode++
+        return currentClicksCountUntilExtendedMode >= TURN_ON_EXTENDED_MODE_THRESHOLD
+    }
 
     fun isInputEmpty(input: String): Boolean {
         return input.isEmpty()

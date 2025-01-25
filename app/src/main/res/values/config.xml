@@ -7,5 +7,5 @@
     <!--<string name="endpoint">http://192.168.1.19:8000</string>-->
     <!--<string name="endpoint">http://10.0.2.2:80</string> &lt;!&ndash; docker based service &ndash;&gt;-->
     <string name="endpoint">http://192.168.1.19:80</string> <!-- docker based service -->
-    <bool name="with_backend">false</bool>
+    <bool name="with_backend">true</bool>
 </resources>

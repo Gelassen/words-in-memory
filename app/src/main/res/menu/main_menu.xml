@@ -13,6 +13,9 @@
     <item android:id="@+id/restoreVocabulary"
         android:title="@string/menu_restore_vocabulary" />
 
+    <item android:id="@+id/settings"
+        android:title="@string/menu_settings" />
+
     <item android:id="@+id/privacyPolicy"
         android:title="@string/menu_privacy_policy" />
 

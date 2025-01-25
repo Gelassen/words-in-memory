@@ -13,6 +13,22 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="editTextStyle">@style/CustomEditTextStyle</item>
+        <item name="android:editTextStyle">@style/CustomEditTextStyle</item>
+    </style>
+
+    <style name="CustomEditTextStyle" parent="Widget.AppCompat.EditText">
+        <!-- Customize cursor color -->
+        <item name="android:textCursorDrawable">@drawable/custom_cursor</item>
+        <item name="colorControlActivated">@color/blue_light</item>
+        <item name="android:colorControlActivated">@color/blue_light</item>
+        <!-- Optionally, customize text color, hint color, etc. -->
+<!--        <item name="android:textColor">@color/blue_dark</item>-->
+<!--        <item name="android:hintTextColor">@color/custom_hint_color</item>-->
+    </style>
+
+    <style name="CustomPreferenceThemeOverlay" parent="Theme.MaterialComponents.Dialog">
+        <item name="editTextPreferenceStyle">@style/CustomEditTextStyle</item>
     </style>
 
     <style name="DialogStyle" parent="Theme.Design.Light.BottomSheetDialog">

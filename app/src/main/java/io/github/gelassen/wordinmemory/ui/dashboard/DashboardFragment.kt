@@ -8,13 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.Manifest
-import android.content.pm.PackageManager
-import android.provider.DocumentsContract
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +23,9 @@ import io.github.gelassen.wordinmemory.databinding.FragmentDashboardBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.dialogs.AddItemDialogProxy
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.providers.DashboardProvider
+import io.github.gelassen.wordinmemory.storage.AppQuickStorage
+import io.github.gelassen.wordinmemory.ui.preferences.SettingsActivity
 import io.github.gelassen.wordinmemory.utils.ConfigParams
 import javax.inject.Inject
 
@@ -49,6 +48,9 @@ open class DashboardFragment: Fragment(),
     lateinit var viewModel: DashboardViewModel
 
     protected lateinit var binding: FragmentDashboardBinding
+
+    private var dashboardProvider: DashboardProvider = DashboardProvider()
+    private var appQuickStorage: AppQuickStorage = AppQuickStorage()
 
     private var restoreRequestLauncher =
         registerForActivityResult(
@@ -99,6 +101,7 @@ open class DashboardFragment: Fragment(),
         viewModel = ViewModelProvider(requireActivity(), viewModelFactory).get(DashboardViewModel::class.java)
         binding = FragmentDashboardBinding.inflate(inflater, container, false)
         binding.isTutoringMode = false
+
         return binding.root
     }
 
@@ -147,6 +150,11 @@ open class DashboardFragment: Fragment(),
             }
             R.id.restoreVocabulary -> {
                 requestRestorePermissions()
+                return true
+            }
+            R.id.settings -> {
+                val intent = Intent(this.context, SettingsActivity::class.java)
+                startActivity(intent)
                 return true
             }
             R.id.privacyPolicy -> {
@@ -237,4 +245,5 @@ open class DashboardFragment: Fragment(),
         intent.type = "application/json"
         restoreRequestLauncher.launch(intent)
     }
+
 }

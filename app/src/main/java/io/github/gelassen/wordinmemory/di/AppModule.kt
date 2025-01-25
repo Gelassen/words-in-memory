@@ -2,12 +2,15 @@ package io.github.gelassen.wordinmemory.di
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.backgroundjobs.MyWorkerFactory
 import io.github.gelassen.wordinmemory.di.AppModule.Consts.DISPATCHER_IO
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
+import io.github.gelassen.wordinmemory.network.DynamicBaseUrlInterceptor
 import io.github.gelassen.wordinmemory.network.IApi
 import io.github.gelassen.wordinmemory.repository.NetworkRepository
 import io.github.gelassen.wordinmemory.repository.StorageRepository
@@ -49,19 +52,30 @@ class AppModule(val application: Application) {
         return application
     }
 
-    @Singleton
     @Provides
-    fun provideApi(): IApi {
-        val url = application.getString(R.string.endpoint)
+    @Singleton
+    fun provideSharedPreferences(context: Context): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(sharedPreferences: SharedPreferences): OkHttpClient {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-        val httpClient = OkHttpClient
-            .Builder()
+        return OkHttpClient.Builder()
+            .addInterceptor(DynamicBaseUrlInterceptor(sharedPreferences))
             .addInterceptor(logging)
             .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideApi(httpCLinet: OkHttpClient): IApi {
+        val url = application.getString(R.string.endpoint)
         val retrofit = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .client(httpClient)
+            .client(httpCLinet)
             .baseUrl(url)
             .build()
 
@@ -99,4 +113,5 @@ class AppModule(val application: Application) {
     fun provideTranslator(): PlainTranslator {
         return PlainTranslator(null)
     }
+
 }

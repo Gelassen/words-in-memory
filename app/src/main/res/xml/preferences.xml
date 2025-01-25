@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:theme="@style/CustomPreferenceThemeOverlay">
     <EditTextPreference
         android:key="server_ip"
         android:title="Server IP Address"
@@ -13,4 +14,11 @@
         android:summary="Enter the server port"
         android:defaultValue="8080"
         android:inputType="number" />
+
+<!--    <SwitchPreferenceCompat-->
+<!--        android:key="is_settings_enabled"-->
+<!--        android:title="Settings are enabled"-->
+<!--        android:summary="Turn it off to dismiss settings from the menu"-->
+<!--        android:defaultValue="false"-->
+<!--        />-->
 </PreferenceScreen>
