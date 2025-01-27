@@ -26,6 +26,7 @@ import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.providers.DashboardProvider
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
+import io.github.gelassen.wordinmemory.ui.FragmentUtils
 import io.github.gelassen.wordinmemory.ui.preferences.SettingsActivity
 import io.github.gelassen.wordinmemory.utils.ConfigParams
 import javax.inject.Inject
@@ -60,6 +61,7 @@ open class DashboardFragment: Fragment(),
 
     private var dashboardProvider: DashboardProvider = DashboardProvider()
     private var appQuickStorage: AppQuickStorage = AppQuickStorage()
+    private var fragmentUtils: FragmentUtils = FragmentUtils()
 
     private var restoreRequestLauncher =
         registerForActivityResult(
@@ -220,6 +222,7 @@ open class DashboardFragment: Fragment(),
     protected fun listenOnModelUpdates(codeOnDataCollect: ((data: List<SubjectToStudy>) -> Unit)? = null) {
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { it ->
+                fragmentUtils.hideProgressIndicator(this@DashboardFragment)
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data.asReversed())
 //                if (it.data.isNotEmpty()) { binding.dashboardList.scrollToPosition(0) }
                 binding.noContentPlaceholder.visibility = if (it.data.isEmpty()) { View.VISIBLE } else { View.GONE }

@@ -12,6 +12,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.AddItemFragmentBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.ui.FragmentUtils
 import io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel
 import javax.inject.Inject
@@ -44,6 +45,8 @@ class AddItemDialogFragment: DialogFragment() {
     lateinit var viewModelFactory: ViewModelFactory
     lateinit var viewModel: NewRecordViewModel
 
+    private val fragmentUtils: FragmentUtils = FragmentUtils()
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         (requireActivity().application as AppApplication).getComponent().inject(this)
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
@@ -57,6 +60,7 @@ class AddItemDialogFragment: DialogFragment() {
         binding.save.setOnClickListener {
             if (requireArguments().isEmpty) {
                 if (isWithExperimentalFeatureSupport()) {
+                    fragmentUtils.showProgressIndicator(this)
                     viewModel.start()
                 } else {
                     viewModel.addItem()

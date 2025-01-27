@@ -7,8 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -18,6 +21,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.AddItemFragmentBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
+import io.github.gelassen.wordinmemory.ui.FragmentUtils
 import io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel
 import javax.inject.Inject
 
@@ -28,6 +32,8 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     lateinit var viewModel: NewRecordViewModel
+
+    private var fragmentUtils: FragmentUtils = FragmentUtils()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +71,7 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
                 if (it.errors.isNotEmpty()) {
                     Toast.makeText(requireContext(), it.errors.first(), Toast.LENGTH_SHORT)
                         .show()
+                    fragmentUtils.hideProgressIndicator(this@AddItemBottomSheetDialogFragment)
                     viewModel.removeError(it.errors.first())
                 }
             }
@@ -74,6 +81,7 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
             Log.d(App.TAG, "${viewModel.wordToTranslate.get()}")
             if (requireArguments().isEmpty) {
                 if (isWithExperimentalFeatureSupport()) {
+                    fragmentUtils.showProgressIndicator(this)
                     viewModel.start()
                 } else {
                     viewModel.addItem()
