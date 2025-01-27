@@ -108,7 +108,7 @@ class AppModule(val application: Application) {
         )
     }
 
-    @Singleton
+    // leave this object without annotation, his lifecycle is app's lifetime
     @Provides
     fun provideTranslator(): PlainTranslator {
         return PlainTranslator(null)

@@ -82,8 +82,12 @@ class NewRecordViewModel
                         }
                         WorkInfo.State.FAILED -> {
                             Log.d(App.TAG, "AddNewRecordWorker is failed")
-                            val errorMsg = it.outputData.keyValueMap.get(BaseWorker.Consts.KEY_ERROR_MSG) as String
-                            state.update { state -> state.copy(messages = state.errors.plus(errorMsg) ) }
+                            val errorMsg = it.outputData.keyValueMap[BaseWorker.Consts.KEY_ERROR_MSG] as? String
+                            if (!errorMsg.isNullOrBlank()) {
+                                state.update { state -> state.copy(messages = state.errors.plus(errorMsg)) }
+                            } else {
+                                Log.d(App.TAG, "No error message found or it is empty.")
+                            }
                         }
                         else -> { Log.d(App.TAG, "[${workRequest.javaClass.simpleName}] unexpected state on collect with state $it") }
                     }

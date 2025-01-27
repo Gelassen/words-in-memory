@@ -22,6 +22,7 @@ import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.FragmentDashboardBinding
 import io.github.gelassen.wordinmemory.di.ViewModelFactory
 import io.github.gelassen.wordinmemory.dialogs.AddItemDialogProxy
+import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 import io.github.gelassen.wordinmemory.providers.DashboardProvider
 import io.github.gelassen.wordinmemory.storage.AppQuickStorage
@@ -46,6 +47,14 @@ open class DashboardFragment: Fragment(),
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     lateinit var viewModel: DashboardViewModel
+    /**
+     * Hack to cleanup resources of the singleton.
+     *
+     * We avoid recreation due its heavy instantiation and we can't close it,
+     * otherwise we can't reopen it.
+     * */
+    @Inject
+    lateinit var plainTranslator: PlainTranslator
 
     protected lateinit var binding: FragmentDashboardBinding
 
@@ -132,6 +141,11 @@ open class DashboardFragment: Fragment(),
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.main_menu, menu)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        plainTranslator.close()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

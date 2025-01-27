@@ -61,7 +61,7 @@ class AddNewRecordWorker(
 
     private fun disposeResources() {
         piPinyin.recycle()
-        translator.close()
+        // we shouldn't close translator instance till the end of app's lifecycle
     }
 
     override suspend fun doWork(): Result {
