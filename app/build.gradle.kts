@@ -14,8 +14,8 @@ android {
         applicationId = "io.github.gelassen.wordsinmemory.beta"
         minSdk = 21
         targetSdk = 33
-        versionCode = 9
-        versionName = "1.5.2"
+        versionCode = 10
+        versionName = "1.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
