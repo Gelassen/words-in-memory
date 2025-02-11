@@ -2,18 +2,29 @@ package io.github.gelassen.wordinmemory.ui.dashboard
 
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import io.github.gelassen.wordinmemory.App
@@ -29,7 +40,9 @@ import io.github.gelassen.wordinmemory.storage.AppQuickStorage
 import io.github.gelassen.wordinmemory.ui.FragmentUtils
 import io.github.gelassen.wordinmemory.ui.preferences.SettingsActivity
 import io.github.gelassen.wordinmemory.utils.ConfigParams
+import io.github.gelassen.wordinmemory.utils.GradientSwipeBackground
 import javax.inject.Inject
+
 
 open class DashboardFragment: Fragment(),
     DashboardAdapter.ClickListener {
@@ -130,6 +143,7 @@ open class DashboardFragment: Fragment(),
         )
         binding.dashboardList.adapter = DashboardAdapter(this)
         (binding.dashboardList.adapter as DashboardAdapter).turnOnTutoring(false)
+        itemTouchHelper.attachToRecyclerView(binding.dashboardList)
         binding.dashboardAddNewWord.apply {
             setOnClickListener {
                 AddItemDialogProxy()
@@ -204,6 +218,12 @@ open class DashboardFragment: Fragment(),
             .show(selectedSubject, childFragmentManager, requireActivity())
     }
 
+    override fun onItemSwiped(removedItem: SubjectToStudy) {
+        lifecycleScope.launchWhenCreated {
+            viewModel.updateItem(removedItem, isComplete = false, isRedundant = true)
+        }
+    }
+
     @Suppress("DEPRECATION")
     protected fun getApiSupportColor(): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -246,6 +266,44 @@ open class DashboardFragment: Fragment(),
             }
         }
     }
+
+    val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return false // No move action required
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.adapterPosition
+            (binding.dashboardList.adapter as DashboardAdapter).onRightSwipe(position)  // Remove item with animation
+        }
+
+        override fun onChildDraw(
+            c: Canvas,
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            dX: Float,
+            dY: Float,
+            actionState: Int,
+            isCurrentlyActive: Boolean
+        ) {
+            val itemView = viewHolder.itemView
+            if (isCurrentlyActive) {
+                // Apply gradient background while swiping
+                val gradient = GradientSwipeBackground(
+                    resources.getColor(R.color.semi_black),
+                    resources.getColor(R.color.blue_dark),
+                );
+                gradient.setBounds(itemView.left, itemView.top, (itemView.left + dX).toInt(), itemView.bottom);
+                gradient.draw(c);
+            }
+
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
+    })
 
     private fun requestCreateDocStorageAccessFramework() {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {

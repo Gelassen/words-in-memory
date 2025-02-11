@@ -21,15 +21,15 @@ interface SubjectToStudyDao {
     @Delete
     fun delete(subject: SubjectToStudyEntity)
 
-    @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE not completed")
+    @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE not completed and not redundant")
     fun getNotCompletedOnly(): Flow<List<SubjectToStudyEntity>>
 
-    @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE completed")
+    @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE completed and not redundant")
     fun getCompletedOnly(): Flow<List<SubjectToStudyEntity>>
 
     @Query("DELETE FROM ${Const.TABLE_NAME}")
     fun clean()
 
-    @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE not completed ORDER BY tutorCounter ASC LIMIT 10")
+    @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE not completed and not redundant ORDER BY tutorCounter ASC LIMIT 10")
     fun getFirstTenNotCompletedAndLessTutored(): List<SubjectToStudyEntity>
 }

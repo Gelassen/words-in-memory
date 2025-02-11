@@ -99,6 +99,7 @@ class DashboardViewModel
                 wordToTranslate.get()!!,
                 translation.get()!!,
                 subject.isCompleted,
+                subject.isRedundant,
                 subject.tutorCounter
             )
             storageRepository.saveSubject(subj)
@@ -107,9 +108,14 @@ class DashboardViewModel
         }
     }
 
-    fun updateItem(selectedSubject: SubjectToStudy, isComplete: Boolean) {
+    fun updateItem(
+        selectedSubject: SubjectToStudy,
+        isComplete: Boolean = false,
+        isRedundant: Boolean = false
+    ) {
         viewModelScope.launch {
             selectedSubject.isCompleted = isComplete
+            selectedSubject.isRedundant = isRedundant
             storageRepository
                 .saveSubject(selectedSubject)
         }

@@ -11,13 +11,21 @@ class SubjectToStudy() : Parcelable {
     lateinit var toTranslate: String
     lateinit var translation: String
     var isCompleted: Boolean = false
+    var isRedundant: Boolean = false
     var tutorCounter: Int = 0
 
-    constructor(uid: Int = 0, toTranslate: String, translation: String, isCompleted: Boolean = false, tutorCounter: Int = 0) : this() {
+    constructor(
+        uid: Int = 0,
+        toTranslate: String,
+        translation: String,
+        isCompleted: Boolean = false,
+        isRedundant: Boolean = false,
+        tutorCounter: Int = 0) : this() {
         this.uid = uid
         this.toTranslate = toTranslate
         this.translation = translation
         this.isCompleted = isCompleted
+        this.isRedundant = isRedundant
         this.tutorCounter = tutorCounter
     }
     constructor(parcel: Parcel) : this() {
@@ -25,6 +33,7 @@ class SubjectToStudy() : Parcelable {
         toTranslate = parcel.readString()!!
         translation = parcel.readString()!!
         isCompleted = parcel.readByte() != 0.toByte()
+        isRedundant = parcel.readByte() != 0.toByte()
         tutorCounter = parcel.readInt()
     }
 
@@ -33,6 +42,7 @@ class SubjectToStudy() : Parcelable {
         parcel.writeString(toTranslate)
         parcel.writeString(translation)
         parcel.writeByte(if (isCompleted) 1 else 0)
+        parcel.writeByte(if (isRedundant) 1 else 0)
         parcel.writeInt(tutorCounter)
     }
 
@@ -57,6 +67,7 @@ private object SubjectToStudyConst {
     const val TO_TRANSLATE = "TO_TRANSLATE"
     const val TRANSLATION = "TRANSLATION"
     const val IS_COMPLETED = "IS_COMPLETED"
+    const val IS_REDUNDANT = "IS_REDUNDANT"
     const val TUTOR_COUNTER = "TUTOR_COUNTER"
 }
 
@@ -66,6 +77,7 @@ fun SubjectToStudy.convertToJson(): String {
     result.put(SubjectToStudyConst.TO_TRANSLATE, toTranslate)
     result.put(SubjectToStudyConst.TRANSLATION, translation)
     result.put(SubjectToStudyConst.IS_COMPLETED, isCompleted)
+    result.put(SubjectToStudyConst.IS_REDUNDANT, isRedundant)
     result.put(SubjectToStudyConst.TUTOR_COUNTER, tutorCounter)
     return result.toString()
 }
@@ -75,9 +87,10 @@ fun SubjectToStudy.fromJson(subj: String): SubjectToStudy {
     val uid = json.optInt(SubjectToStudyConst.UID)
     val toTranslate = json.optString(SubjectToStudyConst.TO_TRANSLATE)
     val isCompleted = json.optBoolean(SubjectToStudyConst.IS_COMPLETED)
+    val isRedundant = json.optBoolean(SubjectToStudyConst.IS_REDUNDANT)
     val translation = json.optString(SubjectToStudyConst.TRANSLATION)
     val tutorCounter = json.optInt(SubjectToStudyConst.TUTOR_COUNTER)
-    return SubjectToStudy(uid, toTranslate, translation, isCompleted, tutorCounter)
+    return SubjectToStudy(uid, toTranslate, translation, isCompleted, isRedundant, tutorCounter)
 }
 
 fun SubjectToStudy.toStorage(): SubjectToStudyEntity {
@@ -86,6 +99,7 @@ fun SubjectToStudy.toStorage(): SubjectToStudyEntity {
         toTranslate,
         translation,
         isCompleted,
+        isRedundant,
         tutorCounter
     )
 }
@@ -96,6 +110,7 @@ fun SubjectToStudy.fromStorage(subjectToStudy: SubjectToStudyEntity): SubjectToS
         subjectToStudy.subjectToTranslate,
         subjectToStudy.translation,
         subjectToStudy.isCompleted,
+        subjectToStudy.isRedundant,
         subjectToStudy.tutorCounter
     )
 }
@@ -106,6 +121,7 @@ fun SubjectToStudy.fromCsvRow(csvRow: CsvRow): SubjectToStudy {
         csvRow.getField(1),
         csvRow.getField(2),
         csvRow.getField(3).toBoolean(),
-        csvRow.getField(4).toInt()
+        csvRow.getField(4).toBoolean(),
+        csvRow.getField(5).toInt()
     )
 }

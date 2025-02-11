@@ -21,6 +21,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         fun onNonComplete(selectedSubject: SubjectToStudy)
         fun onComplete(selectedSubject: SubjectToStudy)
         fun onLongPress(selectedSubject: SubjectToStudy)
+        fun onItemSwiped(removedItem: SubjectToStudy)
     }
 
     private val data: MutableList<SubjectToStudy> = mutableListOf()
@@ -123,6 +124,12 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
             }
 
         })
+    }
+
+    fun onRightSwipe(position: Int) {
+        val removedItem = data.removeAt(position)
+        notifyItemRemoved(position)
+        clickListener.onItemSwiped(removedItem)
     }
 
     private fun decorateTutoringMode(holder: ViewHolder) {

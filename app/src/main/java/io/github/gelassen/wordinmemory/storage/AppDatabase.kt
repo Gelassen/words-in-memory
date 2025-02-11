@@ -11,11 +11,11 @@ import io.github.gelassen.wordinmemory.App
 import io.github.gelassen.wordinmemory.storage.converters.Converters
 
 @Database(
-    version = 6,
+    version = 7,
     entities = [SubjectToStudyEntity::class],
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 5, to = 6)
+        AutoMigration(from = 6, to = 7)
     ]
 )
 @TypeConverters(Converters::class)

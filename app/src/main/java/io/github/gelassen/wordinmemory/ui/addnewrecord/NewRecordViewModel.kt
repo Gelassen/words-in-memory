@@ -120,10 +120,11 @@ class NewRecordViewModel
         viewModelScope.launch {
             val subj = SubjectToStudy(
                 uid = subject.uid,
-                wordToTranslate.get()!!,
-                translation.get()!!,
-                subject.isCompleted,
-                subject.tutorCounter
+                toTranslate = wordToTranslate.get()!!,
+                translation = translation.get()!!,
+                isCompleted = subject.isCompleted,
+                isRedundant = subject.isRedundant,
+                tutorCounter = subject.tutorCounter
             )
             storageRepository.saveSubject(subj)
             wordToTranslate.set("")
