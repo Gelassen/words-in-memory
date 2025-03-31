@@ -32,4 +32,10 @@ interface SubjectToStudyDao {
 
     @Query("SELECT * FROM ${Const.TABLE_NAME} WHERE not completed and not redundant ORDER BY tutorCounter ASC LIMIT 10")
     fun getFirstTenNotCompletedAndLessTutored(): List<SubjectToStudyEntity>
+
+    @Query("""
+        SELECT * FROM ${Const.TABLE_NAME} 
+        WHERE redundant AND ${Const.TABLE_NAME}.data IN (:subjectsNames)
+    """)
+    fun getRedundantSubjects(subjectsNames: List<String>): List<SubjectToStudyEntity>
 }

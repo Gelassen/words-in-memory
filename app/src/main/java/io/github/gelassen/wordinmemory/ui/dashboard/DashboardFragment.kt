@@ -242,6 +242,7 @@ open class DashboardFragment: Fragment(),
     protected fun listenOnModelUpdates(codeOnDataCollect: ((data: List<SubjectToStudy>) -> Unit)? = null) {
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { it ->
+                // TODO: find a way to hide progress indicator when there is no data
                 fragmentUtils.hideProgressIndicator(this@DashboardFragment)
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data.asReversed())
 //                if (it.data.isNotEmpty()) { binding.dashboardList.scrollToPosition(0) }

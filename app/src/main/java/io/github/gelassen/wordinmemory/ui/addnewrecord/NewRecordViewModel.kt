@@ -77,7 +77,7 @@ class NewRecordViewModel
                     when(it.state) {
                         WorkInfo.State.SUCCEEDED -> {
                             Log.d(App.TAG, "AddNewRecordWorker is succeed")
-                            val msg = app.getString(R.string.msg_database_backup_ok)
+                            val msg = app.getString(R.string.msg_new_record_ok)
                             state.update { state -> state.copy(messages = state.messages.plus(msg)) }
                         }
                         WorkInfo.State.FAILED -> {

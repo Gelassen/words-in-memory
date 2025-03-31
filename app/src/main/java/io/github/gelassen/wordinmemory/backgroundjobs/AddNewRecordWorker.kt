@@ -17,6 +17,9 @@ import io.github.gelassen.wordinmemory.repository.NetworkRepository
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import name.pilgr.pipinyin.PiPinyin
 import java.lang.Exception
@@ -247,11 +250,32 @@ class AddNewRecordWorker(
 
         override suspend fun process(): IPipelineTask {
             cleanup()
+            filterWords()
             return this
         }
 
         private fun cleanup() {
             model.dataset = model.dataset.filter { it -> !forbiddenSymbols.contains(it.second) }.toMutableList()
+        }
+
+        private suspend fun filterWords() {
+            withContext(backgroundDispatcher) {
+                // TODO: refactor class to replace model.dataset and model.data with single
+                //      model.dataset: List<SubjectToStudy>
+                val subjectToStudy = model.dataset.map {
+                    it -> SubjectToStudy(
+                        toTranslate = it.first,
+                        translation = it.second
+                    )
+                }
+                val redundantSubjectsNames = storageRepository.getRedundantSubjectsFromList(
+                    *subjectToStudy.map { it }.toTypedArray()
+                ).map { it.toTranslate }
+
+                model.dataset = model.dataset
+                    .filterNot { it.first in redundantSubjectsNames }
+                    .toMutableList()
+            }
         }
 
         @Deprecated("An origin record has been added into dataset at the beginning of the " +

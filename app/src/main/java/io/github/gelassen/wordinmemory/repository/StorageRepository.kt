@@ -42,4 +42,12 @@ class StorageRepository(val subjectsDao: SubjectToStudyDao) {
     suspend fun getDailyPractice(): List<SubjectToStudy> {
         return subjectsDao.getFirstTenNotCompletedAndLessTutored().map { it.toDomain() }
     }
+
+    suspend fun getRedundantSubjectsFromList(vararg subj: SubjectToStudy): List<SubjectToStudy> {
+        val dbEntities = mutableListOf<SubjectToStudyEntity>()
+        subj.forEach { dbEntities.add(it.toStorage()) }
+        val names: List<String> = subj.map { it.toTranslate }
+        return subjectsDao.getRedundantSubjects(names)
+            .map { it.toDomain() }
+    }
 }
