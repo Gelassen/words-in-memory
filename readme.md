@@ -13,7 +13,7 @@ words.inmemory.dev@yandex.com
 
 [done] As a user I want the word I have enter to be cached in app.
 
-As a user I want in case of sentence app split it into words. 
+[done] As a user I want in case of sentence app split it into words. 
 
 [done] As a user I want app shows me this words or sentences on the dashboard. 
 
