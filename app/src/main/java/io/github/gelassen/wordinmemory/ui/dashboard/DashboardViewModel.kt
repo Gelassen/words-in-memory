@@ -128,7 +128,7 @@ class DashboardViewModel
                 .getSubjects()
                 .cancellable()
                 .flowOn(Dispatchers.IO)
-                .collect { it ->
+                .collect {
                     Log.d(App.TAG, "[showAll] show all result (count: ${it.size}) $it")
                     state.update { state ->
                         state.copy(data = it, status = StateFlag.DATA)
@@ -144,7 +144,7 @@ class DashboardViewModel
                 .getNonCompleteSubjectsOnly()
                 .cancellable()
                 .flowOn(Dispatchers.IO)
-                .collect { it ->
+                .collect {
                     Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
                     state.update { state ->
                         state.copy(data = it, status = StateFlag.DATA)
@@ -161,7 +161,7 @@ class DashboardViewModel
 
     fun removeError(error: String) {
         state.update { state ->
-            state.copy(errors = state.errors.filter { it -> it != error })
+            state.copy(errors = state.errors.filter { it != error })
         }
     }
     fun backupVocabulary(uriToBackupDataFile: Uri) {
@@ -240,10 +240,10 @@ class DashboardViewModel
             storageRepository
                 .getNonCompleteSubjectsOnly()
                 .cancellable()
-                .map { it -> it.sortedBy { item -> item.tutorCounter } }
+                .map { it.sortedBy { item -> item.tutorCounter } }
                 /*.take(itemsForPracticeAmount)*/
                 .flowOn(Dispatchers.IO)
-                .collect { it ->
+                .collect {
                     Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
                     state.update { state ->
                         state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.TUTORING_PART_ONE)
@@ -267,11 +267,11 @@ class DashboardViewModel
             storageRepository
                 .getCompleteSubjectsOnly()
                 .cancellable()
-                .map { it -> it.sortedBy { item -> item.tutorCounter } }
-                .map { it -> revertBackTranslationAndSubjectToTranslate(it) }
+                .map { it.sortedBy { item -> item.tutorCounter } }
+                .map { revertBackTranslationAndSubjectToTranslate(it) }
                 /*.take(itemsForPracticeAmount)*/
                 .flowOn(Dispatchers.IO)
-                .collect { it ->
+                .collect {
                     Log.d(App.TAG, "[showAll] show not completed only  result (count: ${it.size}) $it")
                     state.update { state ->
                         state.copy(data = it.take(itemsForPracticeAmount), status = StateFlag.TUTORING_PART_TWO)
@@ -309,7 +309,7 @@ class DashboardViewModel
     }
 
     private fun revertBackTranslationAndSubjectToTranslate(dataset: List<SubjectToStudy>): List<SubjectToStudy> {
-        val data = dataset.map { it ->
+        val data = dataset.map {
             val tmp = it.translation
             it.translation = it.toTranslate
             it.toTranslate = tmp

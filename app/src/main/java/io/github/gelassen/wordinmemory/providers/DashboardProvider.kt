@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class DashboardProvider() {
+class DashboardProvider {
 
     val TURN_ON_EXTENDED_MODE_THRESHOLD = 10
 

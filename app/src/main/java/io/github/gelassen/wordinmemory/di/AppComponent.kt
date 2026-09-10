@@ -6,6 +6,7 @@ import io.github.gelassen.wordinmemory.dialogs.AddItemBottomSheetDialogFragment
 import io.github.gelassen.wordinmemory.dialogs.AddItemDialogFragment
 import io.github.gelassen.wordinmemory.ui.addnewrecord.AddNewRecordFragment
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardFragment
+import io.github.gelassen.wordinmemory.ui.chat.ChatFragment
 import javax.inject.Singleton
 
 @Singleton
@@ -21,4 +22,5 @@ interface AppComponent {
     fun inject(subj: AddItemDialogFragment)
     fun inject(subj: AppApplication)
     fun inject(subj: AddNewRecordFragment)
+    fun inject(subj: ChatFragment)
 }

@@ -15,8 +15,7 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
-open abstract class BaseWorker
-constructor(
+open abstract class BaseWorker(
     context: Context,
     params: WorkerParameters,
     backgroundDispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -55,7 +54,7 @@ constructor(
         val cancel = "Cancel"//applicationContext.getString(R.string.cancel_download)
         // This PendingIntent can be used to cancel the worker
         val intent = WorkManager.getInstance(applicationContext)
-            .createCancelPendingIntent(getId())
+            .createCancelPendingIntent(id)
 
         // Create a Notification channel if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

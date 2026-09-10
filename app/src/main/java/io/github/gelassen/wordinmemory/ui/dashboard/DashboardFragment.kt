@@ -107,7 +107,7 @@ open class DashboardFragment: Fragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true);
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -182,6 +182,14 @@ open class DashboardFragment: Fragment(),
                 requestRestorePermissions()
                 return true
             }
+            R.id.practiceChat -> {
+                requireActivity().supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.container, io.github.gelassen.wordinmemory.ui.chat.ChatFragment.newInstance())
+                    .addToBackStack(null)
+                    .commit()
+                return true
+            }
             R.id.settings -> {
                 val intent = Intent(this.context, SettingsActivity::class.java)
                 startActivity(intent)
@@ -241,7 +249,7 @@ open class DashboardFragment: Fragment(),
 
     protected fun listenOnModelUpdates(codeOnDataCollect: ((data: List<SubjectToStudy>) -> Unit)? = null) {
         lifecycleScope.launchWhenStarted {
-            viewModel.uiState.collect { it ->
+            viewModel.uiState.collect {
                 // TODO: find a way to hide progress indicator when there is no data
                 fragmentUtils.hideProgressIndicator(this@DashboardFragment)
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data.asReversed())
@@ -297,9 +305,9 @@ open class DashboardFragment: Fragment(),
                 val gradient = GradientSwipeBackground(
                     resources.getColor(R.color.semi_black),
                     resources.getColor(R.color.blue_dark),
-                );
-                gradient.setBounds(itemView.left, itemView.top, (itemView.left + dX).toInt(), itemView.bottom);
-                gradient.draw(c);
+                )
+                gradient.setBounds(itemView.left, itemView.top, (itemView.left + dX).toInt(), itemView.bottom)
+                gradient.draw(c)
             }
 
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)

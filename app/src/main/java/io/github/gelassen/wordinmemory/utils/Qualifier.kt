@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.DisplayMetrics
 import io.github.gelassen.wordinmemory.R
 
-class Qualifier() {
+class Qualifier {
 
     companion object {
         const val BASELINE_WIDTH = 1080

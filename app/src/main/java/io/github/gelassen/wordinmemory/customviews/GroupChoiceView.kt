@@ -19,7 +19,7 @@ class GroupChoiceView : LinearLayout {
     private var enabledTextColor: Int = -1
     private var disabledTextColor: Int = -1
 
-    constructor(context: Context?) : super(context) { }
+    constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) { init(context!!, attrs) }
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
@@ -37,24 +37,12 @@ class GroupChoiceView : LinearLayout {
         init(context!!, attrs)
     }
 
-    override fun addView(child: View) {
-        super.addView(child)
-    }
-
     override fun addView(child: View, index: Int) {
         throw IllegalAccessException("Method is disabled. Component contains only two items which is added at launch")
     }
 
     override fun addView(child: View, width: Int, height: Int) {
         throw IllegalAccessException("Method is disabled. Component contains only two items which is added at launch")
-    }
-
-    override fun addView(child: View, params: ViewGroup.LayoutParams) {
-        super.addView(child, params)
-    }
-
-    override fun addView(child: View, index: Int, params: ViewGroup.LayoutParams) {
-        super.addView(child, index, params)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -103,7 +91,7 @@ class GroupChoiceView : LinearLayout {
 
     private fun getView(text: String, id: Int) : TextView {
         val view = TextView(context)
-        view.setId(id)
+        view.id = id
         view.text = text
         view.setPadding(context.resources.getDimensionPixelOffset(R.dimen.selectable_view_padding))
         view.setTextColor(context.resources.getColor(R.color.blue_light))
@@ -111,12 +99,12 @@ class GroupChoiceView : LinearLayout {
         view.isFocusable = true
         view.gravity = Gravity.CENTER
         val outValue = TypedValue()
-        getContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+        context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
         view.setBackgroundResource(outValue.resourceId)
         return view
     }
 
-    private fun getViewLayoutParams(marginStart: Int, marginEnd: Int) : LinearLayout.LayoutParams {
+    private fun getViewLayoutParams(marginStart: Int, marginEnd: Int) : LayoutParams {
         val params = LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT

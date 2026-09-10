@@ -51,7 +51,7 @@ class TutoringPartOneFragment : BaseTutoringFragment() {
                 viewModel.showPartOneDailyPractice()
             }
 
-            listenOnModelUpdates() { dataset ->
+            listenOnModelUpdates { dataset ->
                 Log.d(App.TAG, "${this.javaClass.simpleName} listenOnModelUpdates()")
 //                if (viewModel.uiState.value.status == StateFlag.TUTORING_PART_ONE) { return@listenOnModelUpdates }
                 if (viewModel.shallSkipPartOneTutoringScreen()

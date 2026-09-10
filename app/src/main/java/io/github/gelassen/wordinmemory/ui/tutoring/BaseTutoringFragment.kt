@@ -64,7 +64,7 @@ abstract class BaseTutoringFragment: DashboardFragment() {
     protected fun showMainScreen() {
         requireActivity().supportFragmentManager
             .beginTransaction()
-            .replace(R.id.container, DashboardFragment.newInstance())
+            .replace(R.id.container, newInstance())
             .commit()
     }
 }

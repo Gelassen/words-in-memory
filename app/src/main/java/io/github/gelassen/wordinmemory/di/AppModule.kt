@@ -12,6 +12,7 @@ import io.github.gelassen.wordinmemory.di.AppModule.Consts.DISPATCHER_IO
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.network.DynamicBaseUrlInterceptor
 import io.github.gelassen.wordinmemory.network.IApi
+import io.github.gelassen.wordinmemory.network.OpenAiApi
 import io.github.gelassen.wordinmemory.repository.NetworkRepository
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.storage.AppDatabase
@@ -29,6 +30,8 @@ class AppModule(val application: Application) {
 
     object Consts {
         const val DISPATCHER_IO = "DISPATCHER_IO"
+        const val OKHTTP_CLIENT = "OKHTTP_CLIENT"
+        const val OPENAI_OKHTTP_CLIENT = "OPENAI_OKHTTP_CLIENT"
     }
 
     @Provides
@@ -60,6 +63,7 @@ class AppModule(val application: Application) {
 
     @Provides
     @Singleton
+    @Named(Consts.OKHTTP_CLIENT)
     fun provideOkHttpClient(sharedPreferences: SharedPreferences): OkHttpClient {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -71,11 +75,11 @@ class AppModule(val application: Application) {
 
     @Singleton
     @Provides
-    fun provideApi(httpCLinet: OkHttpClient): IApi {
+    fun provideApi(@Named(Consts.OKHTTP_CLIENT) httpClient: OkHttpClient): IApi {
         val url = application.getString(R.string.endpoint)
         val retrofit = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .client(httpCLinet)
+            .client(httpClient)
             .baseUrl(url)
             .build()
 
@@ -112,6 +116,28 @@ class AppModule(val application: Application) {
     @Provides
     fun provideTranslator(): PlainTranslator {
         return PlainTranslator(null)
+    }
+
+    @Singleton
+    @Provides
+    @Named(Consts.OPENAI_OKHTTP_CLIENT)
+    fun provideOpenAiOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor()
+        logging.setLevel(HttpLoggingInterceptor.Level.BASIC)
+        return OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideOpenAiApi(@Named(Consts.OPENAI_OKHTTP_CLIENT) openAiClient: OkHttpClient): OpenAiApi {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.openai.com/")
+            .client(openAiClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(OpenAiApi::class.java)
     }
 
 }

@@ -10,7 +10,7 @@ import org.hamcrest.Matcher
 
 class CustomMatchers {
 
-    fun recyclerViewSizeMatch(matcherSize: Int): Matcher<View?>? {
+    fun recyclerViewSizeMatch(matcherSize: Int): Matcher<View?> {
         return object : BoundedMatcher<View?, RecyclerView>(RecyclerView::class.java) {
             override fun describeTo(description: Description) {
                 description.appendText("RecyclerView with list size: $matcherSize")

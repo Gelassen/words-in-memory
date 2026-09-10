@@ -21,4 +21,14 @@
 <!--        android:summary="Turn it off to dismiss settings from the menu"-->
 <!--        android:defaultValue="false"-->
 <!--        />-->
+
+    <!-- OpenAI API key for AI Practice chat (same storage as server_ip / server_port) -->
+    <EditTextPreference
+        android:key="openai_api_key"
+        android:title="@string/pref_openai_api_key_title"
+        android:summary="@string/pref_openai_api_key_summary"
+        android:defaultValue=""
+        android:inputType="textPassword"
+        android:singleLine="true" />
+
 </PreferenceScreen>

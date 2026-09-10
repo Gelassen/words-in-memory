@@ -85,9 +85,9 @@ class RestoreVocabularyWorker(
     private fun getDatasetFromText(jsonArrayAsString: String): MutableList<SubjectToStudy> {
         val result = mutableListOf<SubjectToStudy>()
         val jsonArray = JSONArray(jsonArrayAsString)
-        Log.d(App.TAG, "JSON array: ${jsonArray.toString()}")
+        Log.d(App.TAG, "JSON array: $jsonArray")
         for (idx in 0 until jsonArray.length()) {
-            Log.d(App.TAG, "Json item at index ${idx} is ${jsonArray.getJSONObject(idx).toString()}")
+            Log.d(App.TAG, "Json item at index ${idx} is ${jsonArray.getJSONObject(idx)}")
             jsonArray.getJSONObject(idx)
             result.add(
                 SubjectToStudy().fromJson(jsonArray.optJSONObject(idx).toString())

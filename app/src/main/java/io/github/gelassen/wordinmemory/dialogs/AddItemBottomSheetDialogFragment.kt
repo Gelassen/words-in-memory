@@ -37,14 +37,14 @@ class AddItemBottomSheetDialogFragment: BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.DialogStyle)
+        setStyle(STYLE_NORMAL, R.style.DialogStyle)
         (requireActivity().application as AppApplication).getComponent().inject(this)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // keep an eye on owner parameter, it should be the same scope for view model which is shared among component
 //        viewModel = ViewModelProvider(requireParentFragment(), viewModelFactory).get(DashboardViewModel::class.java)
         viewModel = ViewModelProvider(requireActivity(), viewModelFactory).get(NewRecordViewModel::class.java)

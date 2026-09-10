@@ -66,7 +66,7 @@ class BackupVocabularyWorker(
     private fun writeAsJsonArray(dataset: List<SubjectToStudy>, destinationUri: Uri) {
         Log.d(App.TAG, "Save file to a destination folder $destinationUri")
         val jsonArray = JSONArray()
-        dataset.forEach { it -> jsonArray.put(JSONObject(it.convertToJson())) }
+        dataset.forEach { jsonArray.put(JSONObject(it.convertToJson())) }
         writeTextToUri(context, jsonArray.toString(), destinationUri)
     }
 

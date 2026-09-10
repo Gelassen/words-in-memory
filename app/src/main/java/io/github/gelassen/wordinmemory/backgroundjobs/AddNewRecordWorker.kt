@@ -121,8 +121,7 @@ class AddNewRecordWorker(
                 // translation model will be required on the next step, but it would be better to wait it readiness here
                 if (translator.isTranslationModelReady()) {
                     isFinished.set(true)
-                    val response = networkRepository.splitChineseSentenceIntoWords(record)
-                    when (response) {
+                    when (val response = networkRepository.splitChineseSentenceIntoWords(record)) {
                         is Response.Data -> { processResponse(response) }
                         is Response.Error -> { processErrorResponse(response) }
                     }
@@ -231,7 +230,7 @@ class AddNewRecordWorker(
                 } else {
                     debugCounterPrintln()
                     Log.d(App.TAG, "model.dataWithTranslation ${model.dataWithTranslation}")
-                    model.dataset = model.dataWithTranslation.map { it ->
+                    model.dataset = model.dataWithTranslation.map {
                         val pinyin = piPinyin.toPinyin(it.first, " ")
                         Pair("%s / %s".format(it.first, pinyin), it.second)
                     }.toMutableList()
@@ -255,7 +254,7 @@ class AddNewRecordWorker(
         }
 
         private fun cleanup() {
-            model.dataset = model.dataset.filter { it -> !forbiddenSymbols.contains(it.second) }.toMutableList()
+            model.dataset = model.dataset.filter { !forbiddenSymbols.contains(it.second) }.toMutableList()
         }
 
         private suspend fun filterWords() {
@@ -263,7 +262,7 @@ class AddNewRecordWorker(
                 // TODO: refactor class to replace model.dataset and model.data with single
                 //      model.dataset: List<SubjectToStudy>
                 val subjectToStudy = model.dataset.map {
-                    it -> SubjectToStudy(
+                    SubjectToStudy(
                         toTranslate = it.first,
                         translation = it.second
                     )
@@ -316,7 +315,7 @@ class AddNewRecordWorker(
                 if (isTaskThreeFinished()) {
                     continue
                 } else {
-                    val toDomainObjects = model.dataset.map { it -> SubjectToStudy(toTranslate = it.first, translation = it.second) }
+                    val toDomainObjects = model.dataset.map { SubjectToStudy(toTranslate = it.first, translation = it.second) }
                     Log.d(App.TAG, "Data to save ${toDomainObjects}")
                     withContext(backgroundDispatcher) {
                         storageRepository.saveSubject(*toDomainObjects.map { it }.toTypedArray())

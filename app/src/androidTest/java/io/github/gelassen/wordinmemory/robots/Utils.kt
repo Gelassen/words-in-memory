@@ -20,7 +20,7 @@ import org.hamcrest.TypeSafeMatcher
 
 object Utils {
 
-    fun atPositionByTitle(position: Int, itemMatcher: Matcher<View?>): Matcher<View?>? {
+    fun atPositionByTitle(position: Int, itemMatcher: Matcher<View?>): Matcher<View?> {
         checkNotNull(itemMatcher)
         return object : BoundedMatcher<View?, RecyclerView>(RecyclerView::class.java) {
             override fun describeTo(description: Description) {
@@ -48,7 +48,7 @@ object Utils {
             assertThat(adapter.itemCount, Matchers.`is`(count)) }
     }
 
-    class CompleteAction() : ViewAction {
+    class CompleteAction : ViewAction {
         override fun getDescription(): String {
             return ("CompleteAction is performed")
         }

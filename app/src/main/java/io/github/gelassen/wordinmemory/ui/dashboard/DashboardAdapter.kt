@@ -83,7 +83,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
     }
 
     fun prepareToTranslateClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
-        holder.binding.root.setOnClickListener { it ->
+        holder.binding.root.setOnClickListener {
             clickListener.onClick(selectedSubject)
             holder.translationIsOn = !holder.translationIsOn
             if (holder.translationIsOn) {
@@ -99,7 +99,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         val notSelectedFlag = 0
         if (selectedSubject.isCompleted) {
             holder.binding.root.background.level = selectedFlag
-            holder.binding.completeIcon.background.setLevel(selectedFlag)
+            holder.binding.completeIcon.background.level = selectedFlag
             holder.binding.toTranslate.setTextColor(
                 holder.binding.root.context.resources.getColor(
                     R.color.disabled_text
@@ -107,7 +107,7 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
             )
         } else {
             holder.binding.root.background.level = notSelectedFlag
-            holder.binding.completeIcon.background.setLevel(notSelectedFlag)
+            holder.binding.completeIcon.background.level = notSelectedFlag
             holder.binding.toTranslate.setTextColor(
                 holder.binding.root.context.resources.getColor(
                     R.color.enabled_text
@@ -172,17 +172,17 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
         }
         val isNotFirstItem = position === -1
         position++
-        viewToAnimate.setAlpha(0f)
+        viewToAnimate.alpha = 0f
         val animatorSet = AnimatorSet()
         val animator = ObjectAnimator.ofFloat(viewToAnimate, "alpha", 0f, 0.5f, 1.0f)
         ObjectAnimator.ofFloat(viewToAnimate, "alpha", 0f).start()
-        animator.setStartDelay(if (isNotFirstItem) DURATION / 2 else position * DURATION / 3)
+        animator.startDelay = if (isNotFirstItem) DURATION / 2 else position * DURATION / 3
         animator.duration = 500
         animatorSet.play(animator)
         animator.start()
     }
 
-    inner class ViewHolder(val binding: ViewItemDasboardItemBinding, var translationIsOn: Boolean) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(val binding: ViewItemDasboardItemBinding, var translationIsOn: Boolean) : RecyclerView.ViewHolder(binding.root)
 
     class DiffUtilCallback(private val oldList: List<Any>, private val newList: List<Any>) :
         DiffUtil.Callback() {

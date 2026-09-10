@@ -10,6 +10,7 @@ import dagger.Module;
 import dagger.multibindings.IntoMap;
 import io.github.gelassen.wordinmemory.ui.addnewrecord.NewRecordViewModel;
 import io.github.gelassen.wordinmemory.ui.dashboard.DashboardViewModel;
+import io.github.gelassen.wordinmemory.ui.chat.ChatViewModel;
 
 @Module
 public abstract class ViewModelModule {
@@ -28,4 +29,10 @@ public abstract class ViewModelModule {
     @ViewModelKey(NewRecordViewModel.class)
     @Singleton
     abstract ViewModel newRecordViewModel(NewRecordViewModel vm);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ChatViewModel.class)
+    @Singleton
+    abstract ViewModel chatViewModel(ChatViewModel vm);
 }

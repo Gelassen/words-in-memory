@@ -36,14 +36,7 @@ abstract class AppDatabase: RoomDatabase() {
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, App.DATABASE_NAME)
                 .addCallback(
-                    object : RoomDatabase.Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-/*                        val request = OneTimeWorkRequestBuilder<SeedDatabaseWorker>()
-                            .setInputData(workDataOf(KEY_FILENAME to PLANT_DATA_FILENAME))
-                            .build()
-                        WorkManager.getInstance(context).enqueue(request)*/
-                        }
+                    object : Callback() {
                     }
                 )
                 .build()

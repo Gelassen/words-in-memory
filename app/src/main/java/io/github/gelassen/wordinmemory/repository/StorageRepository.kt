@@ -22,7 +22,7 @@ class StorageRepository(val subjectsDao: SubjectToStudyDao) {
     }
 
     suspend fun getSubjectsNonFlow(): List<SubjectToStudy> {
-        return subjectsDao.getAllNonFlow().map { it -> it.toDomain() }
+        return subjectsDao.getAllNonFlow().map { it.toDomain() }
     }
 
     suspend fun removeSubject(subj: SubjectToStudy) {

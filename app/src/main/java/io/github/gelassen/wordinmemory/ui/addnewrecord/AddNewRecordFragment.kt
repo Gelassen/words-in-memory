@@ -33,14 +33,14 @@ class AddNewRecordFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(false);
+        setHasOptionsMenu(false)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         (requireActivity().application as AppApplication).getComponent().inject(this)
 
         viewModel = ViewModelProvider(requireActivity(), viewModelFactory).get(NewRecordViewModel::class.java)

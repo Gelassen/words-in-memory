@@ -52,7 +52,7 @@ class TutoringPartTwoFragment : BaseTutoringFragment() {
             viewModel.showPartTwoDailyPractice()
         }
 
-        listenOnModelUpdates() { dataset ->
+        listenOnModelUpdates { dataset ->
             if (viewModel.shallSkipPartTwoTutoringScreen()
                 || viewModel.areNotEnoughWordsForPractice()) {
                 finishWork()

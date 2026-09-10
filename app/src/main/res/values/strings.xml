@@ -26,4 +26,15 @@
     <string name="dialog_ok_button">OK</string>
     <string name="dialog_cancel_button">@android:string/cancel</string>
     <string name="privacy_policy_endpoint" translatable="false">https://gelassen.github.io/blog/2020/08/25/google-play-privacy-policy.html</string>
+
+    <!-- chat  -->
+    <string name="menu_practice_chat">Practice with AI</string>
+    <string name="chat_title">AI Practice</string>
+    <string name="chat_input_hint">Type your reply…</string>
+    <string name="chat_send">Send</string>
+
+    <string name="pref_openai_api_key_title">OpenAI API Key</string>
+    <string name="pref_openai_api_key_summary">Key from platform.openai.com — used for AI Practice chat</string>
+
+
 </resources>
