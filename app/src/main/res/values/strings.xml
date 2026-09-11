@@ -33,8 +33,7 @@
     <string name="chat_input_hint">Type your reply…</string>
     <string name="chat_send">Send</string>
 
-    <string name="pref_openai_api_key_title">OpenAI API Key</string>
-    <string name="pref_openai_api_key_summary">Key from platform.openai.com — used for AI Practice chat</string>
-
+    <string name="pref_gemini_api_key_title">Gemini API Key</string>
+    <string name="pref_gemini_api_key_summary">Free key from aistudio.google.com/apikey — used for AI Practice chat</string>
 
 </resources>
