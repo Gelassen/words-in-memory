@@ -1,13 +1,30 @@
-# Words in Memory — local LLM chat
+# Words in Memory
 
-The AI Practice chat uses a **provider-agnostic** chat-completions client.  
-UI and ViewModel code never mention a specific vendor.  
-Any backend that speaks the OpenAI-compatible `/v1/chat/completions` API can be configured via Settings.
+# User Stories:
 
-Default deployment (developer machine): **Ollama** with model **`qwen3.5:9b`**.
+[done] As a user I want to enter a foreign word or sentence with its translation.
 
-Network calls are confined to `ChatRepository`.  
-`ChatViewModel` only manages UI state and vocabulary.
+[done] As a user I want the word I have enter to be cached in app.
+
+[done] As a user I want in case of sentence app split it into words. 
+
+[done] As a user I want app shows me this words or sentences on the dashboard. 
+
+[done] As a user I do not want to see a word translation when I see this word. 
+
+[done] As a user I want to see translation when I tap on the word. 
+
+[done] As a user I want to mark word as completed when I read it without translation. 
+
+[done] As a user I want to have completed words to be shadowed (less visible compare to not completed words).
+
+[done] As a user I want to filter words by its flag "completed" or "uncompleted".
+
+[done] As a user I want to have non default launcher icon. 
+
+[done] As a user I want to modify translation of word or sentence.  
+
+[done] As a user I want to have AI powered conversation with recently added words usage
 
 # Publications
 
