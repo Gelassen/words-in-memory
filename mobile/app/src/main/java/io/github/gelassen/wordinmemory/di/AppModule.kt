@@ -12,7 +12,9 @@ import io.github.gelassen.wordinmemory.di.AppModule.Consts.DISPATCHER_IO
 import io.github.gelassen.wordinmemory.ml.PlainTranslator
 import io.github.gelassen.wordinmemory.network.DynamicBaseUrlInterceptor
 import io.github.gelassen.wordinmemory.network.IApi
-import io.github.gelassen.wordinmemory.network.GeminiApi
+import io.github.gelassen.wordinmemory.network.LlmApi
+import io.github.gelassen.wordinmemory.network.LlmBaseUrlInterceptor
+import io.github.gelassen.wordinmemory.repository.ChatRepository
 import io.github.gelassen.wordinmemory.repository.NetworkRepository
 import io.github.gelassen.wordinmemory.repository.StorageRepository
 import io.github.gelassen.wordinmemory.storage.AppDatabase
@@ -31,7 +33,7 @@ class AppModule(val application: Application) {
     object Consts {
         const val DISPATCHER_IO = "DISPATCHER_IO"
         const val OKHTTP_CLIENT = "OKHTTP_CLIENT"
-        const val GEMINI_OKHTTP_CLIENT = "GEMINI_OKHTTP_CLIENT"
+        const val LLM_OKHTTP_CLIENT = "LLM_OKHTTP_CLIENT"
     }
 
     @Provides
@@ -76,13 +78,13 @@ class AppModule(val application: Application) {
     @Singleton
     @Provides
     fun provideApi(@Named(Consts.OKHTTP_CLIENT) httpClient: OkHttpClient): IApi {
+        // Placeholder base URL; DynamicBaseUrlInterceptor rewrites host/port from prefs
         val url = application.getString(R.string.endpoint)
         val retrofit = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .client(httpClient)
             .baseUrl(url)
             .build()
-
         return retrofit.create(IApi::class.java)
     }
 
@@ -95,6 +97,15 @@ class AppModule(val application: Application) {
     @Named(DISPATCHER_IO)
     fun providesNetworkDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
+    }
+
+    /**
+     * Same signature as before: listener is optional and provided as null at app scope.
+     * Call sites that need callbacks pass their own listener into translate methods.
+     */
+    @Provides
+    fun provideTranslator(): PlainTranslator {
+        return PlainTranslator(null)
     }
 
     @Provides
@@ -112,36 +123,44 @@ class AppModule(val application: Application) {
         )
     }
 
-    // leave this object without annotation, his lifecycle is app's lifetime
-    @Provides
-    fun provideTranslator(): PlainTranslator {
-        return PlainTranslator(null)
-    }
+    // ── LLM chat backend (provider-agnostic) ───────────────────────────────
 
-    @Singleton
     @Provides
-    @Named(Consts.GEMINI_OKHTTP_CLIENT)
-    fun provideGeminiOkHttpClient(): OkHttpClient {
+    @Singleton
+    @Named(Consts.LLM_OKHTTP_CLIENT)
+    fun provideLlmOkHttpClient(sharedPreferences: SharedPreferences): OkHttpClient {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BASIC)
         return OkHttpClient.Builder()
             .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-            .readTimeout(90, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(180, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-            .callTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+            .callTimeout(240, java.util.concurrent.TimeUnit.SECONDS)
+            .addInterceptor(LlmBaseUrlInterceptor(sharedPreferences))
             .addInterceptor(logging)
             .build()
     }
 
     @Singleton
     @Provides
-    fun provideGeminiApi(@Named(Consts.GEMINI_OKHTTP_CLIENT) geminiClient: OkHttpClient): GeminiApi {
+    fun provideLlmApi(
+        @Named(Consts.LLM_OKHTTP_CLIENT) llmClient: OkHttpClient,
+        sharedPreferences: SharedPreferences
+    ): LlmApi {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://generativelanguage.googleapis.com/")
-            .client(geminiClient)
+            .baseUrl(LlmBaseUrlInterceptor.resolveBaseUrl(sharedPreferences))
+            .client(llmClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        return retrofit.create(GeminiApi::class.java)
+        return retrofit.create(LlmApi::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideChatRepository(
+        llmApi: LlmApi,
+        sharedPreferences: SharedPreferences
+    ): ChatRepository {
+        return ChatRepository(llmApi, sharedPreferences)
+    }
 }

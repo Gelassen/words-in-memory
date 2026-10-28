@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:theme="@style/CustomPreferenceThemeOverlay">
+
+    <!-- Chinese text classifier backend -->
+    <EditTextPreference
+        android:key="server_ip"
+        android:title="Classifier Server IP"
+        android:summary="IP of the Chinese word-split backend"
+        android:defaultValue="192.168.1.1"
+        android:inputType="text" />
+
+    <EditTextPreference
+        android:key="server_port"
+        android:title="Classifier Server Port"
+        android:summary="Port of the Chinese word-split backend"
+        android:defaultValue="8080"
+        android:inputType="number" />
+
+    <!-- AI Practice chat backend (provider-agnostic) -->
+    <EditTextPreference
+        android:key="llm_host"
+        android:title="@string/pref_llm_host_title"
+        android:summary="@string/pref_llm_host_summary"
+        android:defaultValue="10.0.2.2"
+        android:inputType="text" />
+
+    <EditTextPreference
+        android:key="llm_port"
+        android:title="@string/pref_llm_port_title"
+        android:summary="@string/pref_llm_port_summary"
+        android:defaultValue="11434"
+        android:inputType="number" />
+
+    <EditTextPreference
+        android:key="llm_model"
+        android:title="@string/pref_llm_model_title"
+        android:summary="@string/pref_llm_model_summary"
+        android:defaultValue="qwen3.5:9b"
+        android:inputType="text" />
+
+</PreferenceScreen>

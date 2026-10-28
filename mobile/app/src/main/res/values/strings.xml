@@ -36,4 +36,13 @@
     <string name="pref_gemini_api_key_title">Gemini API Key</string>
     <string name="pref_gemini_api_key_summary">Free key from aistudio.google.com/apikey — used for AI Practice chat</string>
 
+    <string name="pref_llm_host_title">AI server host</string>
+    <string name="pref_llm_host_summary">IP of the machine that runs the language model. Use 10.0.2.2 for Android emulator, or the PC LAN IP (e.g. 192.168.1.10) for a real phone on the same Wi‑Fi.</string>
+
+    <string name="pref_llm_port_title">AI server port</string>
+    <string name="pref_llm_port_summary">Default is 11434</string>
+
+    <string name="pref_llm_model_title">AI model name</string>
+    <string name="pref_llm_model_summary">Must match a model available on the AI server (default: qwen3.5:9b)</string>
 </resources>
+
