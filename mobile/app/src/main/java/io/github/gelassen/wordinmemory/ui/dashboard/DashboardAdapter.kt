@@ -1,20 +1,17 @@
 package io.github.gelassen.wordinmemory.ui.dashboard
 
-import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import io.github.gelassen.wordinmemory.App.Companion.TAG
 import io.github.gelassen.wordinmemory.R
 import io.github.gelassen.wordinmemory.databinding.ViewItemDasboardItemBinding
 import io.github.gelassen.wordinmemory.model.SubjectToStudy
 
-
-class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<DashboardAdapter.ViewHolder>() {
+class DashboardAdapter(val clickListener: ClickListener) :
+    RecyclerView.Adapter<DashboardAdapter.ViewHolder>() {
 
     interface ClickListener {
         fun onClick(data: SubjectToStudy)
@@ -27,49 +24,81 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
     private val data: MutableList<SubjectToStudy> = mutableListOf()
     private var isTutoring = false
 
-    private var lastPositionForAnimation = 0
-
-    private var DURATION: Long = 500
-    private var onAttach = true
+    /** Uids already shown — animate only brand-new rows, not DiffUtil rebinds */
+    private val seenUids: MutableSet<Int> = mutableSetOf()
+    private var firstBindPass = true
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ViewItemDasboardItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ViewItemDasboardItemBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
         return ViewHolder(binding, false)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val selectedSubject = data.get(position)
+        val selectedSubject = data[position]
         holder.binding.toTranslate.text = selectedSubject.toTranslate
-        setAnimation(holder.itemView, position)
+        holder.itemView.alpha = 1f
         prepareOnCompleteClickCase(holder, selectedSubject)
         prepareToTranslateClickCase(holder, selectedSubject)
         prepareResponseOnSelectionCase(holder, selectedSubject)
         prepareLongPressCase(holder, selectedSubject)
         decorateTutoringMode(holder)
+
+        val isNewRow = selectedSubject.uid != 0 && selectedSubject.uid !in seenUids
+        if (isNewRow && !firstBindPass) {
+            seenUids.add(selectedSubject.uid)
+            animateNewItem(holder.itemView)
+        } else if (selectedSubject.uid != 0) {
+            seenUids.add(selectedSubject.uid)
+        }
     }
 
-    override fun getItemCount(): Int {
-        return data.size
+    override fun getItemCount(): Int = data.size
+
+    fun getDataset(): MutableList<SubjectToStudy> {
+        return data
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
         super.onViewDetachedFromWindow(holder)
         holder.itemView.clearAnimation()
+        holder.itemView.alpha = 1f
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                Log.d(TAG, "onScrollStateChanged: Called $newState")
-                onAttach = false
-                super.onScrollStateChanged(recyclerView, newState)
-            }
-        })
-        super.onAttachedToRecyclerView(recyclerView)
+    fun updateData(newData: List<SubjectToStudy>) {
+        val diffCallback = SubjectDiffCallback(data, newData)
+        val diffResult = DiffUtil.calculateDiff(diffCallback, true)
+        data.clear()
+        data.addAll(newData)
+        diffResult.dispatchUpdatesTo(this)
+        firstBindPass = false
+        val current = newData.map { it.uid }.toSet()
+        seenUids.retainAll(current)
     }
 
-    fun getDataset(): MutableList<SubjectToStudy> {
-        return data
+    fun turnOnTutoring(turnOn: Boolean) {
+        this.isTutoring = turnOn
+    }
+
+    fun onRightSwipe(position: Int) {
+        if (position < 0 || position >= data.size) return
+        val removedItem = data.removeAt(position)
+        seenUids.remove(removedItem.uid)
+        notifyItemRemoved(position)
+        clickListener.onItemSwiped(removedItem)
+    }
+
+    private fun animateNewItem(view: View) {
+        view.alpha = 0f
+        ObjectAnimator.ofFloat(view, View.ALPHA, 0f, 1f).apply {
+            duration = 250
+            start()
+        }
+    }
+
+    private fun decorateTutoringMode(holder: ViewHolder) {
+        // reserved for tutoring decorations
     }
 
     fun prepareOnCompleteClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
@@ -87,7 +116,8 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
             clickListener.onClick(selectedSubject)
             holder.translationIsOn = !holder.translationIsOn
             if (holder.translationIsOn) {
-                holder.binding.toTranslate.text = selectedSubject.toTranslate + " / " + selectedSubject.translation
+                holder.binding.toTranslate.text =
+                    selectedSubject.toTranslate + " / " + selectedSubject.translation
             } else {
                 holder.binding.toTranslate.text = selectedSubject.toTranslate
             }
@@ -101,107 +131,60 @@ class DashboardAdapter(val clickListener: ClickListener) : RecyclerView.Adapter<
             holder.binding.root.background.level = selectedFlag
             holder.binding.completeIcon.background.level = selectedFlag
             holder.binding.toTranslate.setTextColor(
-                holder.binding.root.context.resources.getColor(
-                    R.color.disabled_text
-                )
+                holder.binding.root.context.resources.getColor(R.color.disabled_text)
             )
         } else {
             holder.binding.root.background.level = notSelectedFlag
             holder.binding.completeIcon.background.level = notSelectedFlag
             holder.binding.toTranslate.setTextColor(
-                holder.binding.root.context.resources.getColor(
-                    R.color.enabled_text
-                )
+                holder.binding.root.context.resources.getColor(R.color.enabled_text)
             )
         }
     }
 
     fun prepareLongPressCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
-        holder.binding.root.setOnLongClickListener(object: View.OnLongClickListener {
-            override fun onLongClick(v: View?): Boolean {
-                clickListener.onLongPress(selectedSubject)
-                return true
-            }
-
-        })
-    }
-
-    fun onRightSwipe(position: Int) {
-        val removedItem = data.removeAt(position)
-        notifyItemRemoved(position)
-        clickListener.onItemSwiped(removedItem)
-    }
-
-    private fun decorateTutoringMode(holder: ViewHolder) {
-        val notSelectedFlag = 0
-        if (isTutoring) {
-            holder.binding.completeIcon.visibility = if (isTutoring)  View.GONE else View.VISIBLE
-            holder.binding.root.background.level = notSelectedFlag
-            holder.binding.completeIcon.visibility = View.GONE
-            holder.binding.toTranslate.setTextColor(
-                holder.binding.root.context.resources.getColor(
-                    R.color.enabled_text
-                )
-            )
+        holder.binding.root.setOnLongClickListener {
+            clickListener.onLongPress(selectedSubject)
+            true
         }
     }
 
-    fun updateData(newData: List<SubjectToStudy>) {
-        val diffCallback = DiffUtilCallback(data, newData)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        data.clear()
-        data.addAll(newData)
-        diffResult.dispatchUpdatesTo(this)
-    }
+    class ViewHolder(
+        val binding: ViewItemDasboardItemBinding,
+        var translationIsOn: Boolean
+    ) : RecyclerView.ViewHolder(binding.root)
 
-    fun turnOnTutoring(turnOn: Boolean) {
-        this.isTutoring = turnOn
-    }
-
-    private fun setAnimation(viewToAnimate: View, pos: Int) {
-/*        // If the bound view wasn't previously displayed on screen, it's animated
-        if (position > lastPositionForAnimation) {
-            val animation: Animation =
-                AnimationUtils.loadAnimation(viewToAnimate.context, android.R.anim.fade_in)
-            viewToAnimate.startAnimation(animation)
-            lastPositionForAnimation = position
-        }*/
-        var position = pos
-        if (!onAttach) {
-            position = -1
-        }
-        val isNotFirstItem = position === -1
-        position++
-        viewToAnimate.alpha = 0f
-        val animatorSet = AnimatorSet()
-        val animator = ObjectAnimator.ofFloat(viewToAnimate, "alpha", 0f, 0.5f, 1.0f)
-        ObjectAnimator.ofFloat(viewToAnimate, "alpha", 0f).start()
-        animator.startDelay = if (isNotFirstItem) DURATION / 2 else position * DURATION / 3
-        animator.duration = 500
-        animatorSet.play(animator)
-        animator.start()
-    }
-
-    class ViewHolder(val binding: ViewItemDasboardItemBinding, var translationIsOn: Boolean) : RecyclerView.ViewHolder(binding.root)
-
-    class DiffUtilCallback(private val oldList: List<Any>, private val newList: List<Any>) :
-        DiffUtil.Callback() {
+    /**
+     * Identity by Room uid; content by visible fields.
+     * Old callback compared only javaClass → every update looked like a full change → flicker.
+     */
+    class SubjectDiffCallback(
+        private val oldList: List<SubjectToStudy>,
+        private val newList: List<SubjectToStudy>
+    ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int = oldList.size
 
         override fun getNewListSize(): Int = newList.size
 
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val oldItem = oldList[oldItemPosition]
-            val newItem = newList[newItemPosition]
-            return oldItem.javaClass == newItem.javaClass
+        override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
+            val old = oldList[oldPos]
+            val new = newList[newPos]
+            return if (old.uid != 0 && new.uid != 0) {
+                old.uid == new.uid
+            } else {
+                old.toTranslate == new.toTranslate
+            }
         }
 
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val oldItem = oldList[oldItemPosition]
-            val newItem = newList[newItemPosition]
-
-            return oldItem.hashCode() == newItem.hashCode()
+        override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+            val old = oldList[oldPos]
+            val new = newList[newPos]
+            return old.toTranslate == new.toTranslate &&
+                    old.translation == new.translation &&
+                    old.isCompleted == new.isCompleted &&
+                    old.isRedundant == new.isRedundant &&
+                    old.tutorCounter == new.tutorCounter
         }
     }
 }

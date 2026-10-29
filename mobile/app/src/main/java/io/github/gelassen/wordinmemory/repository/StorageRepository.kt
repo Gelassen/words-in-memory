@@ -10,15 +10,18 @@ import kotlinx.coroutines.flow.map
 
 class StorageRepository(val subjectsDao: SubjectToStudyDao) {
 
+    /**
+     * Batch save in one Room transaction / one observer notification.
+     */
     suspend fun saveSubject(vararg subj: SubjectToStudy) {
-        val dbEntities = mutableListOf<SubjectToStudyEntity>()
-        subj.forEach { dbEntities.add(it.toStorage()) }
-        subjectsDao.insertAll(*dbEntities.map { it }.toTypedArray())
+        if (subj.isEmpty()) return
+        val dbEntities = subj.map { it.toStorage() }
+        subjectsDao.insertAllBatched(dbEntities)
     }
 
     suspend fun getSubjects(): Flow<List<SubjectToStudy>> {
         return subjectsDao.getAll()
-            .map { it -> it.map { it.toDomain() } }
+            .map { list -> list.map { it.toDomain() } }
     }
 
     suspend fun getSubjectsNonFlow(): List<SubjectToStudy> {
@@ -31,12 +34,12 @@ class StorageRepository(val subjectsDao: SubjectToStudyDao) {
 
     suspend fun getNonCompleteSubjectsOnly(): Flow<List<SubjectToStudy>> {
         return subjectsDao.getNotCompletedOnly()
-            .map { it -> it.map { it.toDomain() } }
+            .map { list -> list.map { it.toDomain() } }
     }
 
     suspend fun getCompleteSubjectsOnly(): Flow<List<SubjectToStudy>> {
         return subjectsDao.getCompletedOnly()
-            .map { it -> it.map { it.toDomain() } }
+            .map { list -> list.map { it.toDomain() } }
     }
 
     suspend fun getDailyPractice(): List<SubjectToStudy> {
@@ -44,8 +47,6 @@ class StorageRepository(val subjectsDao: SubjectToStudyDao) {
     }
 
     suspend fun getRedundantSubjectsFromList(vararg subj: SubjectToStudy): List<SubjectToStudy> {
-        val dbEntities = mutableListOf<SubjectToStudyEntity>()
-        subj.forEach { dbEntities.add(it.toStorage()) }
         val names: List<String> = subj.map { it.toTranslate }
         return subjectsDao.getRedundantSubjects(names)
             .map { it.toDomain() }

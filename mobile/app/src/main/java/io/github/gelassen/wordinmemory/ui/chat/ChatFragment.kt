@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -34,6 +35,7 @@ class ChatFragment : Fragment() {
     private lateinit var viewModel: ChatViewModel
     private lateinit var binding: FragmentChatBinding
     private val adapter = ChatAdapter()
+    private var closing: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,13 +48,17 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         (requireActivity().application as AppApplication).getComponent().inject(this)
-        viewModel = ViewModelProvider(this, viewModelFactory)[ChatViewModel::class.java]
+        // Activity scope: survives brief fragment replace while endSession finishes
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ChatViewModel::class.java]
         binding = FragmentChatBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Always (re)start a practice session when the screen is shown
+        viewModel.startSession()
 
         (requireActivity() as AppCompatActivity).setSupportActionBar(binding.toolbar)
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
@@ -75,6 +81,16 @@ class ChatFragment : Fragment() {
             }
         }
 
+        // System Back → same path as toolbar Back
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    leaveChat()
+                }
+            }
+        )
+
         lifecycleScope.launch {
             viewModel.uiState.collectLatest { state ->
                 adapter.submitList(state.messages)
@@ -83,8 +99,8 @@ class ChatFragment : Fragment() {
                 }
                 binding.progressBar.visibility =
                     if (state.isLoading) View.VISIBLE else View.GONE
-                binding.sendButton.isEnabled = !state.isLoading
-                binding.inputEdit.isEnabled = !state.isLoading
+                binding.sendButton.isEnabled = !state.isLoading && !state.sessionClosing
+                binding.inputEdit.isEnabled = !state.isLoading && !state.sessionClosing
             }
         }
     }
@@ -92,14 +108,28 @@ class ChatFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                // back to dashboard
-                requireActivity().supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.container, DashboardFragment.newInstance())
-                    .commit()
+                leaveChat()
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    /**
+     * Finish session (extract + save vocabulary), then open dashboard.
+     * Guarded against double taps.
+     */
+    private fun leaveChat() {
+        if (closing) return
+        closing = true
+        binding.sendButton.isEnabled = false
+        binding.inputEdit.isEnabled = false
+        viewModel.endSession {
+            if (!isAdded) return@endSession
+            requireActivity().supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.container, DashboardFragment.newInstance())
+                .commitAllowingStateLoss()
         }
     }
 

@@ -48,6 +48,7 @@
             android:textColor="@color/white"
             android:layout_margin="24dp"
             android:gravity="center"
+            android:visibility="gone"
             android:text="@string/no_content_placeholder" />
 
         <com.google.android.material.appbar.AppBarLayout

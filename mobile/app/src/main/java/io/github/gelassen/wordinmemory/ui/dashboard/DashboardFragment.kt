@@ -254,7 +254,16 @@ open class DashboardFragment: Fragment(),
                 fragmentUtils.hideProgressIndicator(this@DashboardFragment)
                 (binding.dashboardList.adapter as DashboardAdapter).updateData(it.data.asReversed())
 //                if (it.data.isNotEmpty()) { binding.dashboardList.scrollToPosition(0) }
-                binding.noContentPlaceholder.visibility = if (it.data.isEmpty()) { View.VISIBLE } else { View.GONE }
+                // Placeholder only when list is truly empty and not in a loading gap.
+                // Avoids flash when Flow re-emits after batch insert / tutorCounter bump.
+                // Hide placeholder as soon as list has items or a load is in progress.
+                // Prevents the empty-state flash between Flow emissions after batch insert.
+                val adapterCount =
+                    (binding.dashboardList.adapter as? DashboardAdapter)?.itemCount ?: 0
+                val showPlaceholder =
+                    it.data.isEmpty() && !it.isLoading && adapterCount == 0
+                binding.noContentPlaceholder.visibility =
+                    if (showPlaceholder) View.VISIBLE else View.GONE
                 codeOnDataCollect?.invoke(it.data)
 
                 if (it.errors.isNotEmpty()) {

@@ -9,8 +9,18 @@ interface SubjectToStudyDao {
         const val TABLE_NAME: String = "Subjects"
     }
 
+    /**
+     * Single transaction for the whole vararg → one invalidation of observers
+     * (avoids per-row list flicker on the dashboard).
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg subjects: SubjectToStudyEntity)
+
+    @Transaction
+    suspend fun insertAllBatched(subjects: List<SubjectToStudyEntity>) {
+        if (subjects.isEmpty()) return
+        insertAll(*subjects.toTypedArray())
+    }
 
     @Query("SELECT * FROM ${Const.TABLE_NAME}")
     fun getAll(): Flow<List<SubjectToStudyEntity>>
