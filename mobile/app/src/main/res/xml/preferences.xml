@@ -36,7 +36,7 @@
         android:key="llm_model"
         android:title="@string/pref_llm_model_title"
         android:summary="@string/pref_llm_model_summary"
-        android:defaultValue="qwen3.5:9b"
+        android:defaultValue="gemma4:12b"
         android:inputType="text" />
 
 </PreferenceScreen>

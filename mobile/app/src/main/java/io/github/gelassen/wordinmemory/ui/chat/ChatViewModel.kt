@@ -284,61 +284,64 @@ class ChatViewModel @Inject constructor(
         }
 
         return """
-Ты — дружелюбный репетитор китайского языка для русскоязычных студентов.
+Ты — дружелюбный репетитор китайского языка для русскоязычных пользователей.
 Reply ONLY with the dialogue or short feedback. Never show your thinking process, reasoning, or planning.
-Keep answers short and natural.
+Keep answers short and natural (2–5 коротких предложений).
 
 ОБЯЗАТЕЛЬНЫЙ ФОРМАТ КИТАЙСКОГО В КАЖДОМ СООБЩЕНИИ:
-• Каждое китайское слово или предложение пиши так:
-  汉字 (pīnyīn) — русский перевод
+• 汉字 (pīnyīn) — русский перевод
 • Пример: 你好 (nǐ hǎo) — привет
-• Пример предложения: 我喜欢喝茶 (wǒ xǐhuān hē chá) — я люблю пить чай
-• Не опускай ни иероглифы, ни пиньинь, ни русский перевод.
 
-Правила практики:
-1. Строй короткие естественные предложения и мини-диалоги, опираясь на словарь пользователя ниже.
-2. Задавай вопросы, чтобы студент отвечал, используя эти слова.
-3. Если студент ошибается — мягко поправь и дай правильный пример в формате 汉字 (pīnyīn) — русский.
-4. Иногда вводи 1 новое полезное слово (тоже в тройном формате), опираясь на уже известные.
-5. Можно кратко пояснять на русском; китайские фрагменты всегда в тройном формате.
-6. Не устраивай длинных лекций — держи диалог живым и коротким.
-7. Если словарь пуст — скажи об этом.
+ГЛАВНОЕ — РЕАКЦИЯ НА ОТВЕТ ПОЛЬЗОВАТЕЛЯ:
+1. Сначала отреагируй на то, что пользователь НАПИСАЛ: кратко подтверди смысл, похвали или мягко поправь.
+2. Если пользователь написал по-китайски — повтори исправленный вариант в формате 汉字 (pīnyīn) — русский.
+3. Только ПОСЛЕ реакции задай следующий короткий вопрос по словарю.
+4. НЕ игнорируй реплику пользователя. НЕ повторяй один и тот же вопрос дословно.
+5. Если ответ не по теме словаря — всё равно отреагируй на его смысл, затем мягко верни к теме практики.
+6. Опирайся на словарь ниже; можно добавить 1 новое слово в тройном формате.
+7. Не читай лекций.
 
-Словарь пользователя (используй его):
+Словарь пользователя:
 $vocabBlock
 """.trimIndent()
     }
 
     private fun buildExtractionPrompt(): String {
         return """
-Сессия практики закончена. По всему диалогу выше (И ответы ученика, И реплики учителя) составь список слов и предложений.
+Сессия практики закончена. Нужен список НОВЫХ СЛОВ для словаря.
 
-ОБЯЗАТЕЛЬНО учитывай сообщения ученика (role=user): если ученик писал по-китайски или смешанно — извлеки оттуда слова/фразы.
-Также включи полезные слова и предложения из ответов учителя.
+Приоритет источников (обязательно соблюдай):
+1. Сначала — китайский текст из сообщений пользователя (role=user).
+2. Потом — только те слова учителя, которых не было у пользователя и которых нет в уже известном словаре.
 
-Для КАЖДОЙ единицы укажи:
-- word_hanzi: слово иероглифами
+Как дробить:
+- НЕ сохраняй целое длинное предложение как одну единицу словаря.
+- Разбей последовательность иероглифов на отдельные слова (1–4 иероглифа).
+- Для каждого слова укажи короткое предложение-контекст (где оно встретилось).
+
+Для КАЖДОЙ единицы:
+- word_hanzi: одно слово (не целое предложение)
 - word_pinyin: пиньинь слова
 - word_translation: перевод слова (русский или английский)
-- sentence_hanzi: полное предложение/фраза из диалога, где слово встречалось (можно из реплики ученика)
+- sentence_hanzi: короткое предложение-контекст
 - sentence_pinyin: пиньинь предложения
-- sentence_translation: перевод предложения (русский или английский)
-- source: "user" если взято из реплики ученика, "assistant" если из ответа учителя
+- sentence_translation: перевод предложения
+- source: "user" или "assistant"
 
 Правила:
-- Не выдумывай слова, которых не было в диалоге.
-- Если ученик написал только по-русски без китайского — китайских единиц из этой реплики нет.
-- 10–30 пунктов достаточно.
+- Не выдумывай слова вне диалога.
+- Если пользователь писал только по-русски — из его реплик китайских слов нет.
+- Верни 10–20 слов, по возможности с source=user.
+- Ответ ТОЛЬКО JSON-массив, без markdown:
 
-Ответь ТОЛЬКО JSON-массивом, без markdown и без пояснений:
 [
   {
-    "word_hanzi": "茶",
-    "word_pinyin": "chá",
-    "word_translation": "чай",
-    "sentence_hanzi": "我喜欢喝茶。",
-    "sentence_pinyin": "Wǒ xǐhuān hē chá.",
-    "sentence_translation": "Я люблю пить чай.",
+    "word_hanzi": "亲戚",
+    "word_pinyin": "qīnqi",
+    "word_translation": "родственники",
+    "sentence_hanzi": "昨天晚上，我见到了亲戚。",
+    "sentence_pinyin": "Zuótiān wǎnshang, wǒ jiàndào le qīnqi.",
+    "sentence_translation": "Вчера вечером я встретил родственников.",
     "source": "user"
   }
 ]
@@ -413,11 +416,11 @@ $vocabBlock
      * Fallback: pull Chinese / triples from BOTH user and assistant messages.
      */
     private fun extractFromDialogueFallback(): List<NewVocabItem> {
+        // Explicit CJK code-point ranges (Android regex rejects \p{Han} on many devices)
         val triplePattern = Regex(
             "([\\u4E00-\\u9FFF\\u3400-\\u4DBF\\uF900-\\uFAFF，。！？、\\s]{1,40}?)" +
                     "\\s*[（(]\\s*([^）)]+?)\\s*[）)]\\s*[—–\\-－]\\s*([^\\n。；;]{2,80})"
         )
-        val bareHanPattern = Regex("[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\uF900-\\uFAFF]{2,}")
         val found = linkedMapOf<String, NewVocabItem>()
 
         fun addItem(hanzi: String, pinyin: String, translation: String, source: String) {
@@ -445,17 +448,8 @@ $vocabBlock
                 )
                 if (found.size >= MAX_NEW_WORDS * 2) break
             }
-            if (msg.role == "user") {
-                for (m in bareHanPattern.findAll(msg.content)) {
-                    addItem(
-                        hanzi = m.value,
-                        pinyin = "—",
-                        translation = "",
-                        source = "user"
-                    )
-                    if (found.size >= MAX_NEW_WORDS * 2) break
-                }
-            }
+            // Do NOT save bare Han without pinyin/translation — incomplete dictionary entries.
+            // User Chinese without triple format is enriched only via the model JSON at session end.
             if (found.size >= MAX_NEW_WORDS * 2) break
         }
         Log.d(
@@ -500,33 +494,54 @@ $vocabBlock
             emptyList()
         }
         val knownKeys = known.map { normalizeKey(it.toTranslate) }.toSet()
-        val knownHanziChunks = known.map { it.toTranslate.substringBefore(" /").trim() }.toSet()
+        val knownHanzi = known.map {
+            it.toTranslate.substringBefore(" /").substringBefore(" ｜").trim()
+        }.toSet()
+
+        // Prefer user-sourced words; assistant words only fill the rest
+        val ordered = items.sortedBy { if (it.source.equals("user", ignoreCase = true)) 0 else 1 }
 
         val candidates = linkedMapOf<String, SubjectToStudy>()
-        for (item in items) {
+        for (item in ordered) {
             val wordH = item.wordHanzi?.trim().orEmpty()
-            val hanzi = item.sentenceHanzi?.trim().orEmpty()
-            val pinyin = item.sentencePinyin?.trim().orEmpty()
-            val translation = item.sentenceTranslation?.trim().orEmpty()
-            if (hanzi.isEmpty() || translation.isEmpty()) continue
-
-            val toTranslate = when {
-                wordH.isNotEmpty() && pinyin.isNotEmpty() && pinyin != "—" ->
-                    "$wordH / ${item.wordPinyin?.trim().orEmpty().ifEmpty { pinyin }} ｜ $hanzi / $pinyin"
-                pinyin.isNotEmpty() && pinyin != "—" ->
-                    "$hanzi / $pinyin"
-                else -> hanzi
+            val sentH = item.sentenceHanzi?.trim().orEmpty()
+            // Prefer single word; fall back to sentence only if no word
+            val hanzi = when {
+                wordH.isNotEmpty() && wordH.length <= 8 -> wordH
+                sentH.isNotEmpty() && sentH.length <= 8 -> sentH
+                wordH.isNotEmpty() -> wordH.take(4) // avoid dumping long sentences
+                else -> continue
             }
+            // Skip obvious full-sentence dumps (long + punctuation)
+            if (hanzi.length > 6 && (hanzi.contains("。") || hanzi.contains("，") || hanzi.contains(","))) {
+                continue
+            }
+
+            val pinyin = item.wordPinyin?.trim().orEmpty()
+                .ifEmpty { item.sentencePinyin?.trim().orEmpty() }
+            val translation = item.wordTranslation?.trim().orEmpty()
+                .ifEmpty { item.sentenceTranslation?.trim().orEmpty() }
+            if (hanzi.isEmpty() || translation.isEmpty()) continue
+            if (pinyin.isEmpty() || pinyin == "—") continue
+            if (translation.startsWith("(from ")) continue
+
+            val context = item.sentenceHanzi?.trim().orEmpty()
+            val toTranslate = "$hanzi / $pinyin"
+            val fullTranslation = if (context.isNotEmpty() && context != hanzi) {
+                "$translation （$context）"
+            } else {
+                translation
+            }
+
             val key = normalizeKey(toTranslate)
             if (key in knownKeys) continue
-            if (hanzi in knownHanziChunks) continue
-            if (wordH.isNotEmpty() && wordH in knownHanziChunks && hanzi == wordH) continue
+            if (hanzi in knownHanzi) continue
             if (key in candidates) continue
 
             candidates[key] = SubjectToStudy(
                 uid = 0,
                 toTranslate = toTranslate,
-                translation = translation,
+                translation = fullTranslation,
                 isCompleted = false,
                 isRedundant = false,
                 tutorCounter = 0
@@ -546,6 +561,7 @@ $vocabBlock
     }
 
     /**
+     * Han
      * Han / CJK ideograph check without API 24+ UnicodeScript (minSdk 21).
      */
     private fun isHanChar(ch: Char): Boolean {

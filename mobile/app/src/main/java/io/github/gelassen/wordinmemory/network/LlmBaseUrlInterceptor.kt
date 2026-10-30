@@ -51,7 +51,7 @@ class LlmBaseUrlInterceptor(
         /** Android emulator → host machine loopback */
         const val DEFAULT_HOST = "10.0.2.2"
         const val DEFAULT_PORT = "11434"
-        const val DEFAULT_MODEL = "qwen3.5:9b"
+        const val DEFAULT_MODEL = "gemma4:12b"
 
         fun resolveBaseUrl(prefs: SharedPreferences): String {
             val host = prefs.getString(PREF_LLM_HOST, DEFAULT_HOST)?.trim().orEmpty()

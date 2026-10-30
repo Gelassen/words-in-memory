@@ -43,6 +43,6 @@
     <string name="pref_llm_port_summary">Default is 11434</string>
 
     <string name="pref_llm_model_title">AI model name</string>
-    <string name="pref_llm_model_summary">Must match a model available on the AI server (default: qwen3.5:9b)</string>
+    <string name="pref_llm_model_summary">Must match a model available on the AI server (default: gemma4:12b)</string>
 </resources>
 

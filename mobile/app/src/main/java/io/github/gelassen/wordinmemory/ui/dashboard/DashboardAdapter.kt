@@ -56,10 +56,6 @@ class DashboardAdapter(val clickListener: ClickListener) :
 
     override fun getItemCount(): Int = data.size
 
-    fun getDataset(): MutableList<SubjectToStudy> {
-        return data
-    }
-
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
         super.onViewDetachedFromWindow(holder)
         holder.itemView.clearAnimation()
@@ -77,8 +73,14 @@ class DashboardAdapter(val clickListener: ClickListener) :
         seenUids.retainAll(current)
     }
 
+    fun getDataset(): MutableList<SubjectToStudy> {
+        return data
+    }
+
     fun turnOnTutoring(turnOn: Boolean) {
+        if (this.isTutoring == turnOn) return
         this.isTutoring = turnOn
+        notifyDataSetChanged()
     }
 
     fun onRightSwipe(position: Int) {
@@ -98,7 +100,17 @@ class DashboardAdapter(val clickListener: ClickListener) :
     }
 
     private fun decorateTutoringMode(holder: ViewHolder) {
-        // reserved for tutoring decorations
+        // Tutoring screens: never show "completed" chrome — all cards look normal
+        if (isTutoring) {
+            val notSelectedFlag = 0
+            holder.binding.completeIcon.visibility = View.GONE
+            holder.binding.root.background.level = notSelectedFlag
+            holder.binding.toTranslate.setTextColor(
+                holder.binding.root.context.resources.getColor(R.color.enabled_text)
+            )
+        } else {
+            holder.binding.completeIcon.visibility = View.VISIBLE
+        }
     }
 
     fun prepareOnCompleteClickCase(holder: ViewHolder, selectedSubject: SubjectToStudy) {
